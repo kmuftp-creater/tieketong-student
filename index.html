@@ -1983,11 +1983,11 @@ function joinRoom(){myName=($('nameIn').value||'').trim();if(!myName){showStatus
       function(e){if(e.type==='peer-unavailable'){jRetry(code,'找不到房主');return true;}return false;});
   });}
 var _jTries=0,_jMax=7,_jDone=false,_jTimer=null;
-function jAttempt(code){if(_jDone)return;_jTries++;var pid='shr-'+code;
+function jAttempt(code){if(_jDone)return;_jTries++;var pid=hostTargetPid(code);
   try{hostConn=peer.connect(pid,{reliable:true});}catch(e){jRetry(code,'連線失敗');return;}
   if(_jTimer)clearTimeout(_jTimer);
   _jTimer=setTimeout(function(){if(!_jDone&&(!hostConn||!hostConn.open)){var st='';try{st=hostConn&&hostConn.peerConnection?hostConn.peerConnection.iceConnectionState:'';}catch(e){}try{hostConn&&hostConn.close();}catch(e){}jRetry(code,(st==='failed'||st==='disconnected')?'網路擋住直連':'連線逾時');}},14000);
-  hostConn.on('open',function(){_jDone=true;if(_jTimer)clearTimeout(_jTimer);roomCodeStr=code;
+  hostConn.on('open',function(){_jDone=true;_chGone=0;_chFail=0;if(_jTimer)clearTimeout(_jTimer);roomCodeStr=code;
     showStatus('驗證中…');tSend(hostConn,{t:'hello',id:myId,name:myName,pass:myJoinPass});
     updateConnPill('on');unlockComposer();
     if(myHandUp)setTimeout(function(){if(hostConn&&hostConn.open)tSend(hostConn,{t:'handup',uid:myId,name:myName});},800);});
@@ -2006,7 +2006,14 @@ function updateConnPill(state){var el=$('connPill');if(!el)return;if(isHost){el.
 function unlockComposer(){var m=$('msg'),s=$('sendBtn');if(m)m.disabled=false;if(s)s.disabled=false;}
 function jRetry(code,why){if(_jDone)return;if(_jTimer)clearTimeout(_jTimer);
   var hostGone=/找不到房主|房主目前不在線|房主不在線/.test(why||'');
-  if(iAmCoHost&&!isHost&&!_promoting&&hostGone){_chGone++;if(_chGone>=2){promoteToHost();return;}}else if(!hostGone){_chGone=0;}
+  /* 2026-08-16 修正：原本只認「找不到房主」這類字串，但房主真的消失時，PeerJS 多半是連到逾時
+     （why='連線逾時'），字串比對不中，_chGone 還會被重設歸零，副房主因此永遠不會接手。
+     改為任何原因的連續失敗也累計，達門檻就「嘗試」接手；是否真的接手由搶房號決定：
+     原房主若仍在線，new Peer('shr-'+code) 會拿到 unavailable-id，revertPromote 會取消，不會分裂。 */
+  if(iAmCoHost&&!isHost&&!_promoting){
+    if(hostGone)_chGone++; else _chFail++;
+    if(_chGone>=2||_chFail>=3){promoteToHost();return;}
+  }else if(!hostGone){_chGone=0;}
   if(_jTries<_jMax){
     if($('room').classList.contains('show'))updateConnPill('reco');else showStatus(why+'，重試中…('+_jTries+'/'+_jMax+')');
     if(!_forceRelay&&_jTries>=Math.ceil(_jMax/2)){escalateRelay(code);return;}
@@ -2034,7 +2041,7 @@ function hostBroadcast(obj,exceptId){for(var id in conns){if(id===exceptId)conti
 function sanitizePost(p){if(allowOpen||!p||p.type!=='file')return p;var c={};for(var k in p){if(k==='dataUrl'||k==='thumb')continue;c[k]=p[k];}c.locked=true;return c;}
 function sanitizeFeed(f){if(allowOpen)return f;var a=[];for(var i=0;i<f.length;i++)a.push(sanitizePost(f[i]));return a;}
 function canDrawUid(uid){return uid&&members[uid]&&members[uid].canDraw;}
-function sendInit(c){tSend(c,{t:'init',members:members,feed:sanitizeFeed(feed),roomName:roomName,bg:selBg,allowOpen:allowOpen,kanbanOn:kanbanOn,columns:columns,maxPosts:maxPosts,announce:roomAnnounce,frozen:frozen,poll:activePoll?pollPublic(activePoll):null,questions:questions,cloud:activeCloud?cloudPublic(activeCloud):null,roomStart:roomStartTs,hostId:hostId,coHostId:coHostId});}
+function sendInit(c){tSend(c,{t:'init',members:members,feed:sanitizeFeed(feed),roomName:roomName,bg:selBg,allowOpen:allowOpen,kanbanOn:kanbanOn,columns:columns,maxPosts:maxPosts,announce:roomAnnounce,frozen:frozen,poll:activePoll?pollPublic(activePoll):null,questions:questions,cloud:activeCloud?cloudPublic(activeCloud):null,roomStart:roomStartTs,hostId:hostId,coHostId:coHostId,coHostPeer:coHostPeer,origHostId:origHostId||hostId});}
 function admitMember(c,name,uid){members[uid]={name:name,viewOnly:false,canDraw:false,noComment:false,noAsk:false,checkedIn:false};sendInit(c);
   if(coHostId&&uid===coHostId)tSend(c,coHostPayload());
   hostBroadcast({t:'notice',text:name+' 加入了'},c.peer);notice(name+' 加入了');hostBroadcast({t:'members',members:members});updateMemUI();saveSession();if(_shareOn)setTimeout(function(){shareCallGuest(c.peer);},700);if(pulseAgg.total)tSend(c,{t:'pulseagg',g:pulseAgg.g,y:pulseAgg.y,r:pulseAgg.r,total:pulseAgg.total});}
@@ -2106,7 +2113,7 @@ function guestHandle(o){
   if(o.t==='sharestop'){hideShareViewer();toast('老師結束了分享');return;}
   if(o.t==='denied'){_jDone=true;_leaving=true;try{hostConn&&hostConn.close();}catch(e){}$('room').classList.remove('show');$('lobby').style.display='';showStatus((o.reason||'無法加入房間')+'，請確認後再試',true);return;}
   if(o.t==='queued'){showStatus('房間已滿，排隊中… 等待房主准許加入',false);return;}
-  if(o.t==='cohost'){coHostId=o.coHostId||'';if(o.hostId)hostId=o.hostId;setCoHostFlag();if($('memSheet').classList.contains('show'))openMembers();return;}
+  if(o.t==='cohost'){coHostId=o.coHostId||'';coHostPeer=o.coHostPeer||'';if(o.hostId)hostId=o.hostId;setCoHostFlag();if($('memSheet').classList.contains('show'))openMembers();return;}
   if(o.t==='cohostdata'){roomPass=o.pass||'';maxMembers=o.maxMembers||0;if(o.hostId)hostId=o.hostId;
     /* v7.4 併入：副房主同時保存房主端專屬資料，接手時才不會遺失 */
     if(o.quizStats)quizStats=o.quizStats;if(typeof o.quizRound==='number')quizRound=o.quizRound;
@@ -3116,7 +3123,7 @@ var _saveT=null;
 function roomKey(code){return 'room:'+code;}
 function loadIndex(cb){idbGet('roomIndex',function(a){cb(Array.isArray(a)?a:[]);});}
 function saveSession(){if(!roomCodeStr)return;clearTimeout(_saveT);_saveT=setTimeout(function(){
-  var snap={v:2,ts:Date.now(),code:roomCodeStr,isHost:isHost,myId:myId,myName:myName,roomName:roomName,bg:selBg,allowOpen:allowOpen,roomPass:roomPass,maxMembers:maxMembers,maxPosts:maxPosts,announce:roomAnnounce,anncfg:annCfg,allowDM:allowDM,frozen:frozen,kanbanOn:kanbanOn,columns:columns,members:members,feed:feed,roomStartTs:roomStartTs,hostId:hostId,coHostId:coHostId,exit:exitActive};
+  var snap={v:2,ts:Date.now(),code:roomCodeStr,isHost:isHost,myId:myId,myName:myName,roomName:roomName,bg:selBg,allowOpen:allowOpen,roomPass:roomPass,maxMembers:maxMembers,maxPosts:maxPosts,announce:roomAnnounce,anncfg:annCfg,allowDM:allowDM,frozen:frozen,kanbanOn:kanbanOn,columns:columns,members:members,feed:feed,roomStartTs:roomStartTs,hostId:hostId,coHostId:coHostId,coHostPeer:coHostPeer,origHostId:origHostId,exit:exitActive};
   idbSet(roomKey(roomCodeStr),snap);
   idbSet('session',{code:roomCodeStr,ts:Date.now()});
   loadIndex(function(idx){idx=idx.filter(function(e){return e.code!==snap.code;});
@@ -3134,7 +3141,7 @@ function discardRestore(){clearSession();_saved=null;var r=$('restore');if(r)r.s
 function restoreFrom(s,quiet){
   myId=s.myId||myId;myName=s.myName||myName;roomName=s.roomName;selBg=s.bg;isHost=s.isHost;members=s.members||{};feed=s.feed||[];roomCodeStr=s.code;roomStartTs=s.roomStartTs||Date.now();if(typeof s.allowOpen!=='undefined')allowOpen=s.allowOpen;
   roomPass=s.roomPass||'';maxMembers=s.maxMembers||0;maxPosts=s.maxPosts||0;pending={};kanbanOn=!!s.kanbanOn;columns=s.columns||[];roomAnnounce=s.announce||'';if(s.anncfg)annCfg=s.anncfg;if(typeof s.allowDM!=='undefined')allowDM=!!s.allowDM;frozen=!!s.frozen;
-  hostId=s.hostId||(s.isHost?(s.myId||myId):'');coHostId=s.coHostId||'';iAmCoHost=false;exitActive=s.exit||null;
+  hostId=s.hostId||(s.isHost?(s.myId||myId):'');coHostId=s.coHostId||'';coHostPeer=s.coHostPeer||'';origHostId=s.origHostId||'';iAmCoHost=false;exitActive=s.exit||null;
   applyName(roomName);$('lobby').style.display='none';$('room').classList.add('show');_leaving=false;
   $('roomCode').innerHTML=esc(roomCodeStr)+' <small>點擊複製</small>';applyTheme(selBg);renderFeed();updateMemUI();setHostUI();showAnnounce(roomAnnounce);applyFreeze(frozen);startRoomClock();
   if(!isHost)updateConnPill('reco');
@@ -3166,25 +3173,26 @@ function rehost(code){var tries=0;(function attempt(){tries++;POPTS=buildPOPTS()
   try{peer=new Peer('shr-'+code,POPTS);}catch(e){fallbackHost();return;}
   peer.on('open',function(){roomCodeStr=code;hostId=myId;$('roomCode').innerHTML=esc(code)+' <small>點擊複製</small>';wireHost();notice('房間已重新上線（代碼不變）');saveSession();});
   peer.on('disconnected',function(){try{peer.reconnect();}catch(e){}});
-  peer.on('error',function(e){if(e.type==='unavailable-id'){if(tries<12){try{peer.destroy();}catch(_){}if(tries===2)notice('正在搶回原房號，請稍候…（成功的話代碼不變）');setTimeout(attempt,2500);}else fallbackHost();return;}});
+  peer.on('error',function(e){if(e.type==='unavailable-id'){if(tries<12){try{peer.destroy();}catch(_){}if(tries===2)notice('正在搶回原房號，請稍候…（成功的話代碼不變）');setTimeout(attempt,2500);}else tryHostBack(code);return;}});
 })();}
 function fallbackHost(){mkPeer(genCode(),function(pid){roomCodeStr=pid.replace('shr-','');hostId=myId;$('roomCode').innerHTML=esc(roomCodeStr)+' <small>點擊複製</small>';wireHost();
   notice('已復原；代碼更新為 '+roomCodeStr+'，請通知成員重新加入');saveSession();});}
 
 /* ===================== 房主備援（副房主自動接手） ===================== */
-var _chGone=0;
+var _chGone=0,_chFail=0;
 function setCoHostFlag(){var was=iAmCoHost;iAmCoHost=(!isHost&&!!coHostId&&coHostId===myId);
   if(iAmCoHost&&!was)toast('你被設為副房主：老師若離線，你會自動接手（代碼不變）');
   var el=$('coHostTag');if(el)el.style.display=iAmCoHost?'inline-block':'none';}
 function setCoHost(id){if(!isHost||!members[id]||id===myId)return;
   coHostId=(coHostId===id)?'':id;
   if(coHostId){var c=connByUid(coHostId);if(c)tSend(c,coHostPayload());}
-  hostBroadcast({t:'cohost',coHostId:coHostId,hostId:hostId});
+  coHostPeer=coHostId?((connByUid(coHostId)||{}).peer||''):'';
+  hostBroadcast({t:'cohost',coHostId:coHostId,coHostPeer:coHostPeer,hostId:hostId});
   updateMemUI();openMembers();saveSession();
   notice(coHostId?(members[id].name+' 已設為副房主（老師離線時自動接手）'):'已取消副房主');}
 function promoteToHost(){
   if(isHost||_promoting||_leaving||!iAmCoHost)return;
-  _promoting=true;_jDone=true;_chGone=0; // 停止以訪客身分重連
+  _promoting=true;_jDone=true;_chGone=0;_chFail=0; // 停止以訪客身分重連
   if(_jTimer)clearTimeout(_jTimer);
   try{hostConn&&hostConn.close();}catch(e){}
   notice('老師已離線，副房主接手中…（代碼不變）');
@@ -4110,7 +4118,7 @@ function exportRoster(){if(!isHost)return;function q(s){s=String(s==null?'':s);r
       q(s.t),q(s.c),q(s.t?Math.round(s.c*100/s.t):0)]);});
   var csv='\ufeff'+rows.map(function(r){return r.join(',');}).join('\r\n');
   dl('個人成績單_'+safeName(roomName)+'.csv',new Blob([csv],{type:'text/csv'}));toast('已匯出個人成績單');}
-function sendInit(c){tSend(c,{t:'init',members:members,feed:sanitizeFeed(feed),roomName:roomName,bg:selBg,allowOpen:allowOpen,kanbanOn:kanbanOn,columns:columns,maxPosts:maxPosts,announce:roomAnnounce,anncfg:annCfg,allowDM:allowDM,frozen:frozen,poll:activePoll?pollPublic(activePoll):null,questions:questions,cloud:activeCloud?cloudPublic(activeCloud):null,roomStart:roomStartTs,hostId:hostId,coHostId:coHostId});}
+function sendInit(c){tSend(c,{t:'init',members:members,feed:sanitizeFeed(feed),roomName:roomName,bg:selBg,allowOpen:allowOpen,kanbanOn:kanbanOn,columns:columns,maxPosts:maxPosts,announce:roomAnnounce,anncfg:annCfg,allowDM:allowDM,frozen:frozen,poll:activePoll?pollPublic(activePoll):null,questions:questions,cloud:activeCloud?cloudPublic(activeCloud):null,roomStart:roomStartTs,hostId:hostId,coHostId:coHostId,coHostPeer:coHostPeer,origHostId:origHostId||hostId});}
 
 /* ---------- 訊息擴充 ---------- */
 function hostHandleX(o,c){
@@ -4135,7 +4143,7 @@ function hostHandleX(o,c){
     return true;}
   return false;}
 function guestHandleX(o){
-  if(o.t==='init'){if(o.anncfg)annCfg=o.anncfg;if(typeof o.allowDM!=='undefined')allowDM=!!o.allowDM;return false;}
+  if(o.t==='init'){if(o.anncfg)annCfg=o.anncfg;if(typeof o.allowDM!=='undefined')allowDM=!!o.allowDM;if(o.coHostPeer)coHostPeer=o.coHostPeer;if(o.origHostId)origHostId=o.origHostId;return false;}
   if(o.t==='announce'){if(o.cfg)annCfg=o.cfg;roomAnnounce=o.text||'';showAnnounce(roomAnnounce);saveSession();return true;}
   if(o.t==='members'){members=o.members||{};updateMemUI();applySelfPerms();
     if($('dmModal').classList.contains('show'))renderDM();return true;}
@@ -8312,6 +8320,195 @@ function pushCoHostData(){
   var c=connByUid(coHostId);
   if(c&&c.open){try{tSend(c,coHostPayload());}catch(e){}}}
 setInterval(pushCoHostData,15000);
+</script>
+
+<script>
+/* =========================================================
+   房主交接（2026-08-16 新增）
+
+   解決兩件事：
+   1. 自架 PeerServer 斷線後不會馬上釋放 peer id，副房主搶不回房號就永遠接不了手。
+      → 改成副房主用「自己既有的 peer id」立刻開始服務，不等伺服器。
+        房號則在背景持續嘗試搶回，搶到後新成員仍可用代碼加入。
+   2. 老師回來時會直接搶回房號自立門戶，和副房主形成兩個平行教室。
+      → 改成老師先向現任房主請求交接（hostback），現任房主推完整狀態後退位（stepDown），
+        並廣播 hostmove 讓全班遷移。只有原始房主的 uid 能觸發，且有冷卻，避免乒乓。
+   ========================================================= */
+var coHostPeer='';          /* 副房主的 peer id */
+var origHostId='';          /* 原始房主的 uid */
+var _handing=false;         /* 交接進行中：暫停接手偵測 */
+var _altTried=false;        /* 學員重連時：這一輪是否改連副房主 */
+var _claimTimer=null;       /* 接手後在背景搶房號 */
+var _codePeer=null;         /* 搶到房號後，額外持有的那個 peer */
+var _promoCool=0;           /* 退位後的冷卻，避免立刻又接手 */
+
+/* 學員重連目標：房號與副房主 peer id 交替嘗試 */
+function hostTargetPid(code){
+  if(!isHost&&_altTried&&coHostPeer)return coHostPeer;
+  return 'shr-'+code;}
+
+/* ---------- 1. 副房主接手：用自己的 peer，不搶房號 ---------- */
+function promoteToHost(){
+  if(isHost||_promoting||_leaving||_handing||!iAmCoHost)return;
+  if(Date.now()<_promoCool)return;
+  if(!peer||peer.destroyed)return;
+  _promoting=true;_jDone=true;_chGone=0;_chFail=0;
+  if(_jTimer)clearTimeout(_jTimer);
+  try{hostConn&&hostConn.close();}catch(e){}
+  origHostId=origHostId||hostId||'';
+  if(origHostId&&members[origHostId])delete members[origHostId];
+  conns={};pending={};
+  isHost=true;iAmCoHost=false;hostId=myId;_promoting=false;
+  members[myId]=members[myId]||{name:myName,viewOnly:false};members[myId].viewOnly=false;
+  var el=$('coHostTag');if(el)el.style.display='none';
+  try{peer.on('call',function(call){onIncomingShare(call);});}catch(e){}
+  wireHost();setHostUI();updateConnPill('hide');
+  var fab=$('fab');if(fab)fab.style.display='';
+  $('roomCode').innerHTML=esc(roomCodeStr)+' <small>點擊複製</small>';
+  notice('老師已離線，你已接手為房主（代碼不變，學員會自動重新連上）');
+  startClaimCode();
+  saveSession();}
+
+/* ---------- 2. 背景搶回房號，讓代碼繼續可用、也擋住老師自立門戶 ---------- */
+function startClaimCode(){
+  if(_claimTimer)clearInterval(_claimTimer);
+  function attempt(){
+    if(!isHost||_leaving){if(_claimTimer){clearInterval(_claimTimer);_claimTimer=null;}return;}
+    if(_codePeer&&!_codePeer.destroyed)return;
+    var p;try{p=new Peer('shr-'+roomCodeStr,buildPOPTS(_forceRelay));}catch(e){return;}
+    p.on('open',function(){
+      _codePeer=p;
+      p.on('connection',function(c){
+        c.on('open',function(){conns[c.peer]=c;});
+        c.on('data',function(raw){tRecv(raw,function(o){hostHandle(o,c);});});
+        c.on('close',function(){onPeerGone(c.peer);});
+        c.on('error',function(){});});
+      try{p.on('call',function(call){onIncomingShare(call);});}catch(e){}
+      notice('已取回原房號 '+roomCodeStr+'，新成員可直接用代碼加入');
+      if(_claimTimer){clearInterval(_claimTimer);_claimTimer=null;}});
+    p.on('error',function(){try{p.destroy();}catch(e){}});}
+  attempt();
+  _claimTimer=setInterval(attempt,20000);}
+
+/* ---------- 3. 老師回來：向現任房主請求交接 ---------- */
+function tryHostBack(code){
+  if(!coHostPeer){fallbackHost();return;}
+  _handing=true;
+  notice('偵測到副房主已接手，正在請求交還班級…');
+  try{peer&&peer.destroy();}catch(e){}
+  try{peer=new Peer(undefined,buildPOPTS(_forceRelay));}catch(e){_handing=false;fallbackHost();return;}
+  peer.on('open',function(){
+    var c;try{c=peer.connect(coHostPeer,{reliable:true});}catch(e){_handing=false;fallbackHost();return;}
+    var to=setTimeout(function(){_handing=false;try{c.close();}catch(e){}
+      notice('副房主沒有回應交接請求');fallbackHost();},15000);
+    c.on('open',function(){tSend(c,{t:'hostback',uid:myId,name:myName,code:code});});
+    c.on('data',function(raw){tRecv(raw,function(o){
+      if(o.t==='handover'){clearTimeout(to);acceptHandover(o,c);}
+      else if(o.t==='handoverdeny'){clearTimeout(to);_handing=false;
+        notice('無法交接：'+(o.why||'對方拒絕'));fallbackHost();}});});
+    c.on('error',function(){clearTimeout(to);_handing=false;fallbackHost();});});
+  peer.on('error',function(){if(_handing){_handing=false;fallbackHost();}});}
+
+/* ---------- 4. 現任房主收到交接請求 ---------- */
+function serveHostBack(o,c){
+  if(!isHost)return true;
+  if(!origHostId||o.uid!==origHostId){
+    tSend(c,{t:'handoverdeny',why:'你不是這間教室的原房主'});return true;}
+  _handing=true;
+  notice('老師回來了，正在把班級交還…');
+  tSend(c,{t:'handover',
+    state:{members:members,feed:sanitizeFeed(feed),roomName:roomName,bg:selBg,allowOpen:allowOpen,
+      kanbanOn:kanbanOn,columns:columns,maxPosts:maxPosts,announce:roomAnnounce,anncfg:annCfg,
+      allowDM:allowDM,frozen:frozen,poll:activePoll?pollPublic(activePoll):null,questions:questions,
+      cloud:activeCloud?cloudPublic(activeCloud):null,roomStart:roomStartTs,roomPass:roomPass,
+      maxMembers:maxMembers},
+    extra:coHostPayload()});
+  setTimeout(function(){
+    try{hostBroadcast({t:'hostmove',code:roomCodeStr});}catch(e){}
+    setTimeout(function(){stepDown();},1200);},1200);
+  return true;}
+
+/* ---------- 5. 現任房主退位 ---------- */
+function stepDown(){
+  isHost=false;_handing=false;
+  _promoCool=Date.now()+90000;      /* 90 秒內不再觸發接手，避免乒乓 */
+  if(_claimTimer){clearInterval(_claimTimer);_claimTimer=null;}
+  try{if(_codePeer){_codePeer.destroy();_codePeer=null;}}catch(e){}
+  for(var k in conns){try{conns[k].close();}catch(e){}}
+  conns={};pending={};
+  hostId=origHostId||hostId;
+  iAmCoHost=(!!coHostId&&coHostId===myId);
+  setCoHostFlag();setHostUI();
+  notice('已把房主交還給老師，你回到學員身分');
+  _jDone=false;_jTries=0;_altTried=false;_chGone=0;_chFail=0;
+  setTimeout(function(){try{peer&&peer.destroy();}catch(e){}
+    mkPeer(undefined,function(){jAttempt(roomCodeStr);},
+      function(e){if(e.type==='peer-unavailable'){jRetry(roomCodeStr,'房主目前不在線');return true;}return false;});},2500);
+  saveSession();}
+
+/* ---------- 6. 老師收下交接的狀態，重新當房主 ---------- */
+function acceptHandover(o,c){
+  var s=o.state||{},x=o.extra||{};
+  members=s.members||members;
+  members[myId]=members[myId]||{name:myName,viewOnly:false};
+  members[myId].name=myName;members[myId].viewOnly=false;   /* 接手期間原房主被移出名單，交接回來要把自己加回去 */
+  if(s.feed&&s.feed.length){try{mergeFeedFrom(s.feed);}catch(e){feed=s.feed;try{renderFeed();}catch(_){}}}
+  if(s.roomName)applyName(s.roomName);
+  if(typeof s.allowOpen!=='undefined')allowOpen=s.allowOpen;
+  kanbanOn=!!s.kanbanOn;columns=s.columns||[];maxPosts=s.maxPosts||0;
+  roomAnnounce=s.announce||'';if(s.anncfg)annCfg=s.anncfg;
+  if(typeof s.allowDM!=='undefined')allowDM=!!s.allowDM;
+  frozen=!!s.frozen;questions=s.questions||[];
+  roomStartTs=s.roomStart||roomStartTs;roomPass=s.roomPass||roomPass;maxMembers=s.maxMembers||maxMembers;
+  if(x.quizStats)quizStats=x.quizStats;if(typeof x.quizRound==='number')quizRound=x.quizRound;
+  if(x.sat)sat=x.sat;if(x.assign)assign=x.assign;
+  if(x.aiTutor)aiTutor=x.aiTutor;if(x.aiUse)aiUse=x.aiUse;if(x.aiLog)aiLog=x.aiLog;
+  if(x.logs)logs=x.logs;
+  try{c.close();}catch(e){}
+  _handing=false;isHost=true;hostId=myId;coHostId='';coHostPeer='';iAmCoHost=false;
+  notice('已接回班級，正在取回原房號…');
+  var tries=0;
+  (function claim(){tries++;
+    try{peer&&peer.destroy();}catch(e){}
+    try{peer=new Peer('shr-'+roomCodeStr,buildPOPTS(_forceRelay));}catch(e){fallbackHost();return;}
+    peer.on('open',function(){
+      $('roomCode').innerHTML=esc(roomCodeStr)+' <small>點擊複製</small>';
+      try{peer.on('call',function(call){onIncomingShare(call);});}catch(e){}
+      wireHost();setHostUI();showAnnounce(roomAnnounce);applyFreeze(frozen);
+      updateConnPill('hide');
+      notice('你已重新成為房主，代碼不變（'+roomCodeStr+'），學員會自動連回');
+      saveSession();});
+    peer.on('disconnected',function(){try{peer.reconnect();}catch(e){}});
+    peer.on('error',function(e){if(e.type==='unavailable-id'){
+      if(tries<15){try{peer.destroy();}catch(_){}setTimeout(claim,2000);}
+      else fallbackHost();}});})();}
+
+/* ---------- 7. 訊息掛鉤 ---------- */
+(function(){
+  var hx=hostHandleX,gx=guestHandleX;
+  window.hostHandleX=function(o,c){
+    if(o.t==='hostback')return serveHostBack(o,c);
+    return hx(o,c);};
+  window.guestHandleX=function(o){
+    if(o.t==='hostmove'){
+      if(isHost)return true;
+      _altTried=false;roomCodeStr=o.code||roomCodeStr;
+      notice('老師已回來接手，正在切換連線…');
+      try{hostConn&&hostConn.close();}catch(e){}
+      _jDone=false;_jTries=0;_chGone=0;_chFail=0;
+      setTimeout(function(){reconnectHost();},2000);
+      return true;}
+    return gx(o);};
+})();
+
+/* ---------- 8. 學員重連：房號連不上就改試副房主，兩者交替 ---------- */
+(function(){
+  var base=jRetry;
+  window.jRetry=function(code,why){
+    if(!isHost&&!iAmCoHost&&coHostPeer&&!_jDone)_altTried=!_altTried;
+    return base.apply(this,arguments);};
+})();
+
 </script>
 </body>
 </html>
