@@ -1299,7 +1299,7 @@ body.theme-dark .scr-diag{color:#f0e6d4;background:rgba(255,255,255,.06);}
       <button class="dtool" onclick="dReset()" title="還原 100%（0）"><svg class="ic" fill="none"><use href="#ic-refresh"/></svg> 100%</button>
       <button class="dtool" onclick="toggleMini()" title="顯示／隱藏導覽圖"><svg class="ic" fill="none"><use href="#ic-map"/></svg> 導覽</button>
     </div>
-    <button class="dtool" onclick="clearCanvas()"><svg class="ic" fill="none"><use href="#ic-trash"/></svg> 清除</button>
+    <button class="dtool" id="dClear" onclick="clearCanvas()"><svg class="ic" fill="none"><use href="#ic-trash"/></svg> 清除</button>
     <button class="dtool" id="collabBtn" onclick="toggleCollab()" title="開放全班一起在這塊畫布上畫（房主）" style="display:none"><svg class="ic" fill="none"><use href="#ic-paintbrush"/></svg> 協作白板</button>
     <div class="dgrow"></div>
     <button class="dtool" onclick="closeDraw()">關閉</button>
@@ -9013,6 +9013,116 @@ function toggleRainbow(){
     base.apply(this,arguments);
     if(t)clearTimeout(t);
     t=setTimeout(function(){t=null;try{pushHistory();}catch(e){}},260);};
+})();
+</script>
+
+<script>
+/* =========================================================
+   清空協作白板改為房主限定（2026-08-17）
+
+   原本清除鈕對所有人顯示，而且協作白板開啟時，學生按下去會送 wbclear 給房主，
+   房主收到後不檢查是誰送的就轉發全班——一個學生就能把全班的板書清光。
+   對照同一份程式碼裡的 annoupdate 有 canDrawUid() 檢查，清除卻沒有；
+   清除比標註破壞性大得多，這個落差是 v7.4 就存在的。
+
+   兩層處理：
+   1. UI：協作白板開啟且自己不是房主／副房主時，隱藏清除鈕。
+   2. 房主端驗證：收到 wbclear 時確認送出者是房主或副房主，否則忽略並回覆說明。
+      學生版是公開的靜態檔，改一行 JS 就能繞過 UI，所以房主端驗證才是真的擋。
+
+   個人畫布（協作關閉時）不受影響——那是學生自己的作品，重畫是正常需求，
+   而且不會廣播給任何人。
+   畫筆與物件維持不擋：協作白板的用意就是一起畫，畫錯能擦、物件能刪，
+   不是一次抹掉全部的破壞性操作。
+   ========================================================= */
+function canClearBoard(){
+  if(annoId)return true;                 /* 貼文標註是自己的，照舊 */
+  if(!_wbCollab)return true;             /* 個人畫布，清自己的 */
+  return isHost||iAmCoHost;}
+function updateClearBtn(){
+  var b=$('dClear');if(!b)return;
+  var ok=canClearBoard();
+  b.style.display=ok?'':'none';
+  b.title=ok?'清除畫布':'協作白板由老師清空';}
+
+/* 攔在最前面：UI 沒更新到、或有人用舊畫面時也擋得住 */
+(function(){var base=clearCanvas;
+  window.clearCanvas=function(){
+    if(!canClearBoard()){toast('協作白板只有老師可以清空');return;}
+    return base.apply(this,arguments);};})();
+
+/* 狀態一變就更新按鈕 */
+(function(){
+  ['setDrawUI','updateCollabBtn','setCoHostFlag'].forEach(function(fn){
+    if(typeof window[fn]!=='function')return;
+    var base=window[fn];
+    window[fn]=function(){var r=base.apply(this,arguments);try{updateClearBtn();}catch(e){}return r;};});
+  var bo=openDraw;window.openDraw=function(){var r=bo.apply(this,arguments);try{updateClearBtn();}catch(e){}return r;};
+  var gx=guestHandleX;
+  window.guestHandleX=function(o){
+    var r=gx(o);
+    if(o&&(o.t==='wbopen'||o.t==='wbclose'||o.t==='cohost'))setTimeout(function(){try{updateClearBtn();}catch(e){}},60);
+    return r;};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){try{updateClearBtn();}catch(e){}});
+  else{try{updateClearBtn();}catch(e){}}
+})();
+
+/* 房主端驗證：非房主／副房主送來的 wbclear 一律忽略 */
+(function(){var hx=hostHandleX;
+  window.hostHandleX=function(o,c){
+    if(o&&o.t==='wbclear'){
+      var u=c&&c._uid;
+      if(u&&(u===coHostId)){return hx(o,c);}      /* 副房主放行，交給原本的處理 */
+      var nm=(members[u]&&members[u].name)||'學員';
+      try{tSend(c,{t:'notice',text:'協作白板只有老師可以清空'});}catch(e){}
+      notice('已擋下 '+nm+' 清空協作白板的動作');
+      return true;                                 /* 擋下，不轉發全班 */
+    }
+    return hx(o,c);};})();
+</script>
+
+<script>
+/* =========================================================
+   後加入的學生補送協作白板（2026-08-17）
+
+   wbopen 只在老師按下切換的那一刻廣播一次，之後才進教室的學生
+   既不知道協作白板開著（_wbCollab 仍為 false），也拿不到現有板書。
+   後果有二：
+   1. 他看到的是一塊空白的共用板，畫上去的東西和全班對不起來。
+   2. 清除鈕的房主限定會對他失效（因為判斷依據就是 _wbCollab）。
+
+   作法：房主在 sendInit 之後，若協作白板開著，就對這位新成員單獨補送一次
+   wbload（含 objs 與 collab 旗標）。沿用既有訊息，不新增協定。
+   代價是每位新成員多一份白板影像的傳輸，只在協作白板開著時才會發生。
+   ========================================================= */
+(function(){
+  var base=sendInit;
+  window.sendInit=function(c){
+    base(c);
+    if(!isHost||!_wbCollab||annoId)return;
+    setTimeout(function(){
+      try{
+        if(!c||!c.open)return;
+        var st=snapState();
+        tSend(c,{t:'wbload',img:st.img,w:st.w,h:st.h,ox:st.ox,oy:st.oy,
+          objs:(st.objs||objs.map(objPub)),collab:true});
+      }catch(e){}
+    },700);};
+})();
+
+(function(){
+  var base=applyWbLoad;
+  window.applyWbLoad=function(o){
+    /* base 會在 im.onload 裡直接碰 board.width，若學生從沒開過畫布，
+       board／dctx 都還是 null，會在 onload 裡無聲拋錯，只剩物件進得來。
+       先把畫布初始化起來再交給 base。這個坑對原本「老師推送白板」那條路徑也存在。 */
+    try{if(!dInited&&typeof openDrawKeep==='function')openDrawKeep();}catch(e){}
+    if(o&&o.collab&&!isHost){
+      _wbCollab=true;
+      try{updateCollabBtn();}catch(e){}
+      try{updateClearBtn();}catch(e){}
+      notice('老師的協作白板進行中，已幫你載入目前的板面');}
+    return base.apply(this,arguments);};
 })();
 </script>
 </body>
