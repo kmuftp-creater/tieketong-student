@@ -109,6 +109,19 @@ body.theme-dark .hist-card{box-shadow:0 8px 22px rgba(0,0,0,.45);}
 .cm-x{background:rgba(120,95,40,.08);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:5px 10px;font-size:13px;}
 .qr-box{display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;padding:14px;min-height:200px;}
 .qr-box img,.qr-box canvas{display:block;}
+.tl-row{display:flex;gap:10px;align-items:flex-start;padding:9px 4px;border-bottom:1px solid var(--line);}
+.tl-row:last-child{border-bottom:none;}
+.tl-ic{flex:0 0 26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(200,165,100,.16);color:var(--gold2);}
+body.theme-dark .tl-ic{background:rgba(255,255,255,.1);color:var(--gold);}
+.tl-ic .ic{width:15px;height:15px;}
+.tl-bd{flex:1;min-width:0;}
+.tl-t{font-size:14px;font-weight:700;color:var(--tx);word-break:break-word;}
+.tl-s{font-size:12px;color:var(--mut);margin-top:2px;word-break:break-word;}
+.tl-time{flex:0 0 auto;font-size:11.5px;color:var(--mut);font-variant-numeric:tabular-nums;padding-top:4px;}
+.tl-filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+.tl-filters .qbtn.on{background:rgba(200,165,100,.3);border-color:var(--gold2);}
+.qr-link{font-size:12px;color:var(--gold2);word-break:break-all;text-align:center;margin:6px 0 2px;cursor:pointer;text-decoration:underline;}
+body.theme-dark .qr-link{color:var(--gold);}
 .qr-code{text-align:center;font-size:20px;font-weight:800;color:var(--gold);letter-spacing:3px;margin-top:12px;}
 .qr-hint{font-size:12px;color:var(--mut);text-align:center;margin-top:8px;line-height:1.5;}
 .tm-presets{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
@@ -807,6 +820,15 @@ body.has-ann .ann-x{top:6px;}
 @keyframes scrblink{0%,100%{opacity:1}50%{opacity:.55}}
 .scr-prev{width:100%;max-height:38vh;border-radius:12px;background:#000;margin:8px 0;display:block;}
 /* v5.3 白板批次 */
+.dobj.dwidget{border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.2);background:linear-gradient(160deg,#fdfbf5,#f2e8d2);border:2px solid var(--gold2);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;user-select:none;overflow:hidden;}
+body.theme-dark .dobj.dwidget{background:linear-gradient(160deg,#26202c,#1a1620);border-color:rgba(200,165,100,.5);}
+.dwid-v{font-weight:900;line-height:1;color:var(--navy);}
+body.theme-dark .dwid-v{color:#ffe6b0;}
+.dwid-l{font-size:11px;font-weight:800;color:var(--gold2);letter-spacing:1px;}
+body.theme-dark .dwid-l{color:var(--gold);}
+.dwid-r{position:absolute;right:4px;bottom:4px;border:none;background:rgba(120,95,40,.14);color:var(--gold2);border-radius:8px;font-size:11px;font-weight:800;padding:3px 7px;cursor:pointer;}
+.dwid-r:active{background:rgba(120,95,40,.3);}
+body.theme-dark .dwid-r{background:rgba(255,255,255,.12);color:#ffe6b0;}
 .dobj.dnote{border-radius:10px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:10px;box-sizing:border-box;font-weight:700;line-height:1.35;overflow:hidden;}
 .dobj.dnote .dtxt-in{white-space:pre-wrap;word-break:break-word;outline:none;width:100%;height:100%;overflow:hidden;}
 .dobj.dshape .dshape-in{width:100%;height:100%;pointer-events:none;}
@@ -1336,7 +1358,8 @@ body.theme-dark .scr-diag{color:#f0e6d4;background:rgba(255,255,255,.06);}
     <div class="cm-h">房號 QR Code<button class="cm-x" onclick="$('qrModal').classList.remove('show')">✕</button></div>
     <div class="qr-box" id="qrBox"></div>
     <div class="qr-code" id="qrCodeTxt"></div>
-    <div class="qr-hint">學生用手機掃描即可加入（須以網址開啟本頁時才有效）；也可直接輸入上方代碼。</div>
+    <div class="qr-link" id="qrLink" onclick="copyJoinLink()"></div>
+    <div class="qr-hint">學生用手機掃描即可加入，或點上方連結複製後傳給學生；也可直接輸入代碼。</div>
   </div>
 </div>
 
@@ -1663,6 +1686,19 @@ body.theme-dark .scr-diag{color:#f0e6d4;background:rgba(255,255,255,.06);}
   </div>
 </div>
 
+<!-- ===== 課堂動態時間軸 ===== -->
+<div class="cmodal" id="tlModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="cm-card cm-xwide">
+    <div class="cm-h"><svg class="ic" fill="none"><use href="#ic-history"/></svg> 課堂動態<button class="cm-x" onclick="$('tlModal').classList.remove('show')">✕</button></div>
+    <div class="tl-filters" id="tlFilters"></div>
+    <div id="tlBody" style="max-height:60vh;overflow:auto"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+      <button class="btn btn-ghost" style="flex:1 1 120px" onclick="renderTimeline()"><svg class="ic" fill="none"><use href="#ic-refresh"/></svg> 更新</button>
+      <button class="btn btn-ghost" style="flex:1 1 140px" onclick="exportTimeline()"><svg class="ic" fill="none"><use href="#ic-download"/></svg> 匯出 CSV</button>
+    </div>
+  </div>
+</div>
+
 <!-- ===== v6.4：滿意度調查 ===== -->
 <div class="cmodal" id="satModal" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="cm-card cm-wide">
@@ -1916,6 +1952,15 @@ var DEFAULT_ICE=ICE.concat([{urls:'stun:stun2.l.google.com:19302'},{urls:'stun:s
      psHost:'peer.yourdomain.com', psPort:443, psPath:'/', psSecure:true,
      turnUrl:'turn:turn.yourdomain.com:3478?transport=tcp', turnUser:'classroom', turnCred:'你的TURN密碼'
 */
+/* 學生版部署網址。QR 與邀請連結一律指向這裡——教師版在 class.huobest.com 有登入閘門，
+   若沿用 location.href 產生連結，學生掃了會落在登入頁進不去。
+   自架到別的位置時改這裡，或在「連線設定」用 stuUrl 覆寫；留空則退回舊行為（用目前頁面網址）。 */
+var STUDENT_URL='https://kmuftp-creater.github.io/tieketong-student/';
+function studentBase(){
+  var o='';try{o=(netCfg().stuUrl||'').trim();}catch(e){}
+  var u=o||STUDENT_URL||'';
+  if(!u)return location.href.split('#')[0].split('?')[0];
+  return u.split('#')[0].split('?')[0];}
 var BUILT_IN={
   psHost:'peer.huobest.com',
   psPort:443,
@@ -2081,7 +2126,7 @@ function hostHandle(o,c){
   if(o.t==='pollanswer'){var pau=o.uid||c._uid;if(activePoll&&activePoll.open&&o.id===activePoll.id&&(o.text||'').trim()&&pau){setAnswer(activePoll,pau,o.name||(members[pau]&&members[pau].name)||'學員',o.text.trim());if($('pollModal').classList.contains('show'))showPoll(activePoll);hostBroadcast({t:'pollanswers',id:activePoll.id,answers:activePoll.answers});}return;}
   if(o.t==='handup'){var huid=o.uid||c._uid;if(!huid)return;var hnm=o.name||(members[huid]&&members[huid].name)||'學員';handsRaised[huid]={name:hnm,ts:Date.now()};updateHandBtn();if($('handsModal').classList.contains('show'))openHands();hostNotify('✋ '+hnm+' 舉手了（點此查看）',openHands);return;}
   if(o.t==='handdown'){var duid=o.uid||c._uid;if(duid)delete handsRaised[duid];updateHandBtn();if($('handsModal').classList.contains('show'))openHands();return;}
-  if(o.t==='question'){if((o.text||'').trim()){questions.push({id:uid(),text:o.text.trim(),votes:[],answered:false});qSyncAndRender();hostNotify('❓ 收到一則匿名提問（點此查看）',openQA);}return;}
+  if(o.t==='question'){if((o.text||'').trim()){questions.push({id:uid(),text:o.text.trim(),votes:[],answered:false,ts:nowHM()});qSyncAndRender();hostNotify('❓ 收到一則匿名提問（點此查看）',openQA);}return;}
   if(o.t==='qvote'){var qvu=o.uid||c._uid;var qq=findQ(o.qid);if(qq&&qvu){var k=qq.votes.indexOf(qvu);if(k>=0)qq.votes.splice(k,1);else qq.votes.push(qvu);qSyncAndRender();}return;}
   if(o.t==='cloudword'){if(activeCloud&&activeCloud.open&&o.id===activeCloud.id&&(o.word||'').trim()){addCloudWord(activeCloud,o.word.trim());if($('cloudModal').classList.contains('show'))showCloud(activeCloud);hostBroadcast({t:'cloudupdate',id:activeCloud.id,words:activeCloud.words});}return;}
 }
@@ -2555,7 +2600,7 @@ function clearHands(){if(!isHost)return;handsRaised={};updateHandBtn();openHands
 function qVotes(q){return (q.votes&&q.votes.length)||0;}
 function openQA(){renderQA();$('qaModal').classList.add('show');}
 function submitQuestion(){var t=($('qaIn').value||'').trim();if(!t)return;
-  if(isHost){$('qaIn').value='';questions.push({id:uid(),text:t,votes:[],answered:false});qSyncAndRender();}
+  if(isHost){$('qaIn').value='';questions.push({id:uid(),text:t,votes:[],answered:false,ts:nowHM()});qSyncAndRender();}
   else if(hostConn&&hostConn.open){$('qaIn').value='';tSend(hostConn,{t:'question',text:t});toast('已匿名送出');}
   else toast('尚未連線到老師，請稍候再試');}
 function upvoteQuestion(qid){if(isHost){var q=findQ(qid);if(q){var k=q.votes.indexOf(myId);if(k>=0)q.votes.splice(k,1);else q.votes.push(myId);qSyncAndRender();}}
@@ -3399,8 +3444,11 @@ function toggleLockAll(){if(!isHost)return;var stu=memberArray().filter(function
 var _qrLib=false;
 function loadQR(cb){if(_qrLib){cb(true);return;}var s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
   s.onload=function(){_qrLib=true;cb(true);};s.onerror=function(){cb(false);};document.head.appendChild(s);}
-function joinURL(){var base=location.href.split('#')[0].split('?')[0];return base+'?room='+encodeURIComponent(roomCodeStr);}
-function showQR(){$('qrCodeTxt').textContent='代碼：'+roomCodeStr;$('qrModal').classList.add('show');var box=$('qrBox');box.innerHTML='<div style="color:#8a7d5e;font-size:13px;padding:20px">產生中…</div>';
+function joinURL(){return studentBase()+'?room='+encodeURIComponent(roomCodeStr);}
+function copyJoinLink(){var u=joinURL();
+  if(navigator.clipboard)navigator.clipboard.writeText(u).then(function(){toast('已複製邀請連結');},function(){prompt('請手動複製邀請連結：',u);});
+  else prompt('請手動複製邀請連結：',u);}
+function showQR(){$('qrCodeTxt').textContent='代碼：'+roomCodeStr;var lk=$('qrLink');if(lk){lk.textContent=joinURL();lk.title='點擊複製邀請連結';}$('qrModal').classList.add('show');var box=$('qrBox');box.innerHTML='<div style="color:#8a7d5e;font-size:13px;padding:20px">產生中…</div>';
   loadQR(function(ok){box.innerHTML='';if(!ok||typeof QRCode==='undefined'){box.innerHTML='<div style="color:#8a7d5e;font-size:13px;padding:14px">需要連網才能產生 QR，請改用代碼 '+esc(roomCodeStr)+'</div>';return;}
     try{new QRCode(box,{text:joinURL(),width:220,height:220,colorDark:'#111',colorLight:'#fff'});}catch(e){box.innerHTML='<div style="color:#8a7d5e">產生失敗，請用代碼</div>';}});}
 
@@ -5033,13 +5081,13 @@ function restoreSnapshot(d,broadcast){
     worldOff={x:(typeof d.ox==='number'?d.ox:-bWorldW()/2),y:(typeof d.oy==='number'?d.oy:-bWorldH()/2)};
     contentBox=d.box?{x0:d.box.x0,y0:d.box.y0,x1:d.box.x1,y1:d.box.y1}:null;
     clearObjs(true);
-    (d.objs||[]).forEach(function(po){
-      addObj({id:po.id,type:po.type||'img',src:po.src,x:po.x,y:po.y,w:po.w,h:po.h,
-        rot:po.rot||0,text:po.text,fs:po.fs,color:po.color,font:po.font},true);});
+    /* 2026-08-17 修正：原本在這裡手列欄位，便利貼底色 bg、圖形的 shape／sw／fill／d1
+       以及掛件的 kind／val／min／max 全部會在還原時掉光。改用 objFromPub 統一還原。 */
+    (d.objs||[]).forEach(function(po){addObj(objFromPub(po),true);});
     dZoom=1;dFit();applyBoardView();scheduleMini();
     toast('已還原'+(d.ts?('（存檔時間 '+d.ts+'）'):''));
     if(broadcast&&isHost&&_wbCollab&&!annoId){
-      hostBroadcast({t:'wbload',img:d.img,w:board.width,h:board.height,ox:worldOff.x,oy:worldOff.y});
+      hostBroadcast({t:'wbload',img:d.img,w:board.width,h:board.height,ox:worldOff.x,oy:worldOff.y,objs:(d.objs||objs.map(objPub))});
       hostBroadcast({t:'obj',op:'clear'});
       objs.forEach(function(o){hostBroadcast({t:'obj',op:'add',o:objPub(o)});});
       notice('已把還原後的白板同步給全班');}};
@@ -5699,7 +5747,7 @@ function updateUndoBtns(){
 function syncBoardIfHost(){
   if(!isHost||!_wbCollab||annoId)return;
   var st=snapState();
-  hostBroadcast({t:'wbload',img:st.img,w:st.w,h:st.h,ox:st.ox,oy:st.oy});
+  hostBroadcast({t:'wbload',img:st.img,w:st.w,h:st.h,ox:st.ox,oy:st.oy,objs:(st.objs||objs.map(objPub))});
   hostBroadcast({t:'obj',op:'clear'});
   objs.forEach(function(o){hostBroadcast({t:'obj',op:'add',o:objPub(o)});});}
 
@@ -8509,6 +8557,263 @@ function acceptHandover(o,c){
     return base.apply(this,arguments);};
 })();
 
+</script>
+
+<script>
+/* =========================================================
+   畫布掛件：骰子與抽籤（2026-08-17 新增）
+
+   構想來自他站的共編白板：把骰子／抽籤做成「留在白板上的物件」而不是彈窗，
+   老師可以擺著整堂課隨時點，不必每次重新開視窗。
+   實作沿用既有的畫布物件系統（可拖曳、縮放、旋轉、蓋印、存檔、即時同步），
+   只多一個 type='widget'，欄位 kind（dice｜lot）、val（目前點數）、min／max（抽籤範圍）。
+   ========================================================= */
+var LOT_MIN=1,LOT_MAX=30;
+var _PX='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+
+function widgetRoll(o){
+  if(o.kind==='dice')return 1+Math.floor(Math.random()*6);
+  var a=Math.max(1,parseInt(o.min,10)||1),b=Math.max(a,parseInt(o.max,10)||30);
+  return a+Math.floor(Math.random()*(b-a+1));}
+function widgetLabel(o){return o.kind==='dice'?'骰子':('抽籤 '+(o.min||1)+'–'+(o.max||30));}
+function canRollWidget(){
+  if(isHost)return true;
+  try{return (typeof iCanDraw==='function')?iCanDraw():!myViewOnly;}catch(e){return false;}}
+function paintWidget(o){
+  if(!o.el)return;
+  var v=o.el.querySelector('.dwid-v'),l=o.el.querySelector('.dwid-l');
+  if(v){v.textContent=(o.kind==='dice')?'⚀⚁⚂⚃⚄⚅'.charAt(Math.max(0,Math.min(5,(o.val||1)-1))):String(o.val||'—');
+        v.style.fontSize=Math.max(14,Math.round(Math.min(o.w,o.h)*(o.kind==='dice'?0.62:0.44)*dZoom))+'px';}
+  if(l)l.textContent=widgetLabel(o);}
+function rollWidget(o){
+  if(!canRollWidget()){toast('目前沒有操作白板的權限');return;}
+  o.val=widgetRoll(o);paintWidget(o);
+  objSend({t:'obj',op:'set',id:o.id,x:o.x,y:o.y,w:o.w,h:o.h,rot:o.rot||0,val:o.val});
+  try{pushHistory();}catch(e){}
+  scheduleMini();}
+function addWidget(kind){
+  if(!$('drawModal').classList.contains('show')){toast('請先開啟畫布');return;}
+  var w=kind==='dice'?96:132,h=96;
+  var o={id:uid(),type:'widget',kind:kind,x:Math.round(viewX+40),y:Math.round(viewY+40),w:w,h:h,rot:0,
+         min:LOT_MIN,max:LOT_MAX};
+  o.val=widgetRoll(o);
+  addObj(o);
+  toast(kind==='dice'?'已放上骰子，點「擲」重擲':'已放上抽籤，點「抽」重抽');}
+function setLotRange(){
+  var a=prompt('抽籤最小值：',String(LOT_MIN));if(a===null)return;
+  var b=prompt('抽籤最大值：',String(LOT_MAX));if(b===null)return;
+  LOT_MIN=Math.max(1,parseInt(a,10)||1);LOT_MAX=Math.max(LOT_MIN,parseInt(b,10)||30);
+  var n=0;
+  objs.forEach(function(o){if(o.type==='widget'&&o.kind==='lot'){
+    o.min=LOT_MIN;o.max=LOT_MAX;o.val=widgetRoll(o);paintWidget(o);n++;
+    objSend({t:'obj',op:'set',id:o.id,x:o.x,y:o.y,w:o.w,h:o.h,rot:o.rot||0,val:o.val,min:o.min,max:o.max});}});
+  toast('抽籤範圍改為 '+LOT_MIN+'–'+LOT_MAX+(n?('，已更新 '+n+' 個掛件'):''));}
+
+/* ---- 元素：沿用 base 的把手／刪除／拖曳，只換掉內容 ---- */
+(function(){var base=makeObjEl;
+  window.makeObjEl=function(o){
+    if(o.type!=='widget')return base(o);
+    if(!o.src)o.src=_PX;
+    var d=base(o);
+    d.classList.add('dwidget');
+    var im=d.querySelector('img');if(im&&im.parentNode)im.parentNode.removeChild(im);
+    var v=document.createElement('div');v.className='dwid-v';
+    var l=document.createElement('div');l.className='dwid-l';
+    d.insertBefore(l,d.firstChild);d.insertBefore(v,d.firstChild);
+    var r=document.createElement('button');r.className='dwid-r';r.textContent=o.kind==='dice'?'擲':'抽';
+    r.title='重新產生';
+    r.addEventListener('pointerdown',function(e){e.stopPropagation();});
+    r.addEventListener('click',function(e){e.stopPropagation();rollWidget(o);});
+    d.appendChild(r);
+    d.addEventListener('dblclick',function(e){e.stopPropagation();rollWidget(o);});
+    paintWidget(o);
+    return d;};})();
+
+/* ---- 版面：字級要跟著縮放走 ---- */
+(function(){var base=layoutObj;
+  window.layoutObj=function(o){base(o);if(o&&o.type==='widget')paintWidget(o);};})();
+
+/* ---- 同步：把 kind／val／min／max 帶上 ---- */
+(function(){var basePub=objPub,baseFrom=objFromPub;
+  window.objPub=function(o){var b=basePub(o);
+    if(o.type==='widget'){b.kind=o.kind;b.val=o.val;b.min=o.min;b.max=o.max;delete b.src;}
+    return b;};
+  window.objFromPub=function(p){var o=baseFrom(p);
+    if(p.type==='widget'){o.kind=p.kind||'dice';o.val=p.val;o.min=p.min;o.max=p.max;o.src=_PX;}
+    return o;};})();
+
+(function(){var base=applyObj;
+  window.applyObj=function(m){
+    if(m.op==='add'&&m.o&&m.o.type==='widget'){
+      if(objById(m.o.id))removeObj(m.o.id,true);
+      addObj(objFromPub(m.o),true);
+      ensureRoom({x0:m.o.x,y0:m.o.y,x1:m.o.x+m.o.w,y1:m.o.y+m.o.h});applyBoardView();return;}
+    if(m.op==='set'){var o=objById(m.id);
+      if(o&&o.type==='widget'){
+        if(typeof m.val!=='undefined')o.val=m.val;
+        if(typeof m.min!=='undefined')o.min=m.min;
+        if(typeof m.max!=='undefined')o.max=m.max;
+        paintWidget(o);}}
+    base(m);};})();
+
+/* ---- 蓋印／匯出：把掛件畫進點陣圖 ---- */
+(function(){var base=drawObjOn;
+  window.drawObjOn=function(ctx,o,px,py,k){
+    if(o.type!=='widget')return base(ctx,o,px,py,k);
+    var w=o.w*k,h=o.h*k,X=px*k,Y=py*k;
+    ctx.save();ctx.globalCompositeOperation='source-over';
+    if(o.rot){ctx.translate(X+w/2,Y+h/2);ctx.rotate(o.rot*Math.PI/180);ctx.translate(-w/2,-h/2);X=0;Y=0;}
+    var dark=document.body.classList.contains('theme-dark');
+    ctx.fillStyle=dark?'#221c28':'#f7efdd';
+    ctx.strokeStyle=dark?'rgba(200,165,100,.6)':'#8a5e1e';ctx.lineWidth=Math.max(1,2*k);
+    var r=Math.min(14*k,w/2,h/2);
+    ctx.beginPath();
+    ctx.moveTo(X+r,Y);ctx.lineTo(X+w-r,Y);ctx.quadraticCurveTo(X+w,Y,X+w,Y+r);
+    ctx.lineTo(X+w,Y+h-r);ctx.quadraticCurveTo(X+w,Y+h,X+w-r,Y+h);
+    ctx.lineTo(X+r,Y+h);ctx.quadraticCurveTo(X,Y+h,X,Y+h-r);
+    ctx.lineTo(X,Y+r);ctx.quadraticCurveTo(X,Y,X+r,Y);
+    ctx.closePath();ctx.fill();ctx.stroke();
+    var txt=(o.kind==='dice')?'⚀⚁⚂⚃⚄⚅'.charAt(Math.max(0,Math.min(5,(o.val||1)-1))):String(o.val||'—');
+    ctx.fillStyle=dark?'#ffe6b0':'#1c3a5e';
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.font='900 '+Math.max(12,Math.round(Math.min(o.w,o.h)*(o.kind==='dice'?0.62:0.44)*k))+'px system-ui,"Noto Sans TC",sans-serif';
+    ctx.fillText(txt,X+w/2,Y+h/2-6*k);
+    ctx.fillStyle=dark?'#e8c47a':'#8a5e1e';
+    ctx.font='800 '+Math.max(9,Math.round(11*k))+'px system-ui,"Noto Sans TC",sans-serif';
+    ctx.fillText(widgetLabel(o),X+w/2,Y+h-14*k);
+    ctx.restore();};})();
+
+/* ---- 工具列入口 ---- */
+(function(){
+  function ico(id){return '<svg class="ic" fill="none"><use href="#'+id+'"/></svg> ';}
+  function add(){
+    var g=document.getElementById('dNavGroup');
+    if(!g||document.getElementById('dDice'))return;
+    var anchor=null;
+    [].forEach.call(g.querySelectorAll('button'),function(b){
+      if(!anchor&&(b.getAttribute('onclick')||'').indexOf('openBoardSave')>=0)anchor=b;});
+    function mk(id,html,title,fn){
+      var b=document.createElement('button');b.className='dtool';b.id=id;
+      b.innerHTML=html;b.title=title;b.onclick=fn;
+      if(anchor)g.insertBefore(b,anchor);else g.appendChild(b);
+      return b;}
+    mk('dDice',ico('ic-dices')+'骰子','在白板上放一顆骰子，點「擲」重擲，全班同步',function(){addWidget('dice');});
+    mk('dLot',ico('ic-ticket')+'抽籤','在白板上放一個抽籤器，點「抽」重抽；右鍵可改範圍',function(){addWidget('lot');});
+    var lot=document.getElementById('dLot');
+    if(lot)lot.addEventListener('contextmenu',function(e){e.preventDefault();setLotRange();});}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();
+})();
+</script>
+
+<script>
+/* =========================================================
+   白板推送補物件（2026-08-17）
+
+   v7.4 的 applyWbLoad 只把點陣圖畫上去，完全沒有重建物件。
+   結果是「房主載入存檔自動推送全班」時，學員只會看到扁平的底圖，
+   便利貼、文字、圖形、掛件全部不見，也不能再拖曳。
+   這裡補上物件重建；送出端已同步補上 objs 欄位。
+   ========================================================= */
+(function(){var base=applyWbLoad;
+  window.applyWbLoad=function(o){
+    base(o);
+    if(!o||!Array.isArray(o.objs))return;
+    setTimeout(function(){
+      try{
+        clearObjs(true);
+        o.objs.forEach(function(po){addObj(objFromPub(po),true);});
+        applyBoardView();scheduleMini();
+        if(o.objs.length)toast('老師載入了一份白板（含 '+o.objs.length+' 個物件）');
+      }catch(e){}
+    },120);};
+})();
+</script>
+
+<script>
+/* =========================================================
+   課堂動態時間軸（2026-08-17 新增）
+
+   構想來自他站的共編白板：把課堂事件串成一條可視的流水。
+   我們的 logs 一直有在收資料，但只有匯出時才看得到，課堂進行中沒有入口。
+   這裡不新增任何埋點，完全從既有資料（feed／questions／logs.*／members）
+   即時推導，所以不會有「埋點漏掉導致時間軸和匯出對不起來」的問題。
+   ========================================================= */
+var _tlFilter='all';
+function tlHM(ts){
+  if(!ts)return '';
+  var s=String(ts);
+  var m=s.match(/(\d{1,2}):(\d{2})/);
+  return m?(('0'+m[1]).slice(-2)+':'+m[2]):s;}
+function tlKey(ts){
+  var s=String(ts||'');
+  var m=s.match(/(\d{1,2}):(\d{2})(?::(\d{2}))?/);
+  if(!m)return 0;
+  return (parseInt(m[1],10)*3600)+(parseInt(m[2],10)*60)+(parseInt(m[3]||'0',10));}
+function timelineRows(){
+  var out=[];
+  function add(cat,ic,ts,title,sub){out.push({cat:cat,ic:ic,ts:ts||'',title:title||'',sub:sub||'',k:tlKey(ts)});}
+  try{(feed||[]).forEach(function(p){
+    var kind=p.type==='image'?'圖片':p.type==='video'?'影片':p.type==='audio'?'語音':p.type==='file'?'檔案':'貼文';
+    add('post','ic-message',p.ts,(p.name||'學員')+' 張貼了'+kind,(p.subject?('【'+p.subject+'】'):'')+String(p.text||'').slice(0,60));});}catch(e){}
+  try{(questions||[]).forEach(function(q){
+    add('qa','ic-help','',(q.answered?'（已回覆）':'')+'匿名提問',String(q.text||'').slice(0,80)+'　'+((q.votes&&q.votes.length)||0)+' 票');});}catch(e){}
+  try{((logs||{}).checkins||[]).forEach(function(x){add('checkin','ic-clipboard',x.ts,(x.name||'學員')+' 已簽到','');});}catch(e){}
+  try{((logs||{}).polls||[]).forEach(function(x){
+    add('poll','ic-vote',x.ts,'投票：'+String(x.q||'').slice(0,40),'共 '+(x.total||0)+' 票');});}catch(e){}
+  try{((logs||{}).clouds||[]).forEach(function(x){add('cloud','ic-cloud',x.ts,'文字雲：'+String(x.q||x.topic||'').slice(0,40),'');});}catch(e){}
+  try{((logs||{}).buzz||[]).forEach(function(x){
+    var l=(x.list||[]).map(function(y){return y.name;}).slice(0,3).join('、');
+    add('buzz','ic-bell',x.ts,'搶答結果',l+((x.list||[]).length>3?' 等 '+x.list.length+' 人':''));});}catch(e){}
+  try{((logs||{}).hands||[]).forEach(function(x){
+    var l=(x.list||[]).map(function(y){return y.name||y;}).slice(0,4).join('、');
+    add('hand','ic-hand',x.ts,'舉手紀錄',l);});}catch(e){}
+  try{((logs||{}).exits||[]).forEach(function(x){
+    add('exit','ic-ticket',x.ts,'退場券：'+String(x.q||'').slice(0,40),'收到 '+((x.answers||[]).length)+' 份');});}catch(e){}
+  try{((logs||{}).quiz||[]).forEach(function(x){
+    add('quiz','ic-bot',x.ts,'答題：'+String(x.q||'').slice(0,36),(x.name||'')+' 選「'+String(x.pick||'')+'」'+(x.ok?'　答對':'　答錯'));});}catch(e){}
+  out.sort(function(a,b){return b.k-a.k;});
+  return out;}
+var TL_CATS=[['all','全部'],['post','貼文'],['qa','提問'],['checkin','簽到'],['poll','投票'],
+             ['quiz','答題'],['buzz','搶答'],['hand','舉手'],['exit','退場券'],['cloud','文字雲']];
+function renderTimeline(){
+  var rows=timelineRows();
+  var f=$('tlFilters');
+  if(f)f.innerHTML=TL_CATS.map(function(c){
+    var n=c[0]==='all'?rows.length:rows.filter(function(r){return r.cat===c[0];}).length;
+    if(c[0]!=='all'&&!n)return '';
+    return '<button class="qbtn'+(_tlFilter===c[0]?' on':'')+'" onclick="tlSetFilter(\''+c[0]+'\')">'+c[1]+'（'+n+'）</button>';}).join('');
+  var list=_tlFilter==='all'?rows:rows.filter(function(r){return r.cat===_tlFilter;});
+  var b=$('tlBody');if(!b)return;
+  if(!list.length){b.innerHTML='<div class="poll-empty">目前還沒有動態。開始上課後，貼文、提問、簽到、投票、答題都會出現在這裡。</div>';return;}
+  b.innerHTML=list.map(function(r){
+    return '<div class="tl-row"><div class="tl-ic"><svg class="ic" fill="none"><use href="#'+r.ic+'"/></svg></div>'+
+      '<div class="tl-bd"><div class="tl-t">'+esc(r.title)+'</div>'+
+      (r.sub?('<div class="tl-s">'+esc(r.sub)+'</div>'):'')+'</div>'+
+      '<div class="tl-time">'+esc(tlHM(r.ts))+'</div></div>';}).join('');}
+function tlSetFilter(c){_tlFilter=c;renderTimeline();}
+function openTimeline(){_tlFilter='all';renderTimeline();$('tlModal').classList.add('show');}
+function exportTimeline(){
+  var rows=[['時間','類別','事件','細節']];
+  var nm={};TL_CATS.forEach(function(c){nm[c[0]]=c[1];});
+  timelineRows().forEach(function(r){rows.push([tlHM(r.ts),nm[r.cat]||r.cat,r.title,r.sub]);});
+  var csv='\ufeff'+rows.map(function(r){return r.map(function(x){
+    return '"'+String(x==null?'':x).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  dl('課堂動態_'+safeName(roomName)+'.csv',new Blob([csv],{type:'text/csv'}));
+  toast('已匯出課堂動態');}
+
+/* 入口：管理與匯出分組 */
+(function(){
+  function add(){
+    var g=document.getElementById('menuManage');
+    if(!g||document.getElementById('tlBtn'))return;
+    var pop=g.querySelector('.tb-pop');if(!pop)return;
+    var b=document.createElement('button');
+    b.className='rb-exp';b.id='tlBtn';b.title='課堂動態：貼文、提問、簽到、投票、答題的時間軸';
+    b.innerHTML='<svg class="ic" fill="none"><use href="#ic-history"/></svg> 課堂動態';
+    b.onclick=openTimeline;
+    pop.insertBefore(b,pop.firstChild);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();
+})();
 </script>
 </body>
 </html>
