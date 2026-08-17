@@ -8976,5 +8976,44 @@ function toggleRainbow(){
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();
 })();
 </script>
+
+<script>
+/* =========================================================
+   清空畫布納入復原堆疊（2026-08-17）
+
+   原本 clearCanvas 清除前後都沒有 pushHistory：
+   清完之後 _histI 仍指向「清除前」那一格，按復原會再退一步，
+   跳到最後一筆筆跡之前，救回來的不是使用者預期的那張畫面。
+   遠端的 wbclear 更是完全不進歷史，學員誤清時老師無法復原。
+
+   作法：清除後補一次 pushHistory()（清除前那一格由既有的各項動作負責），
+   如此按一次復原就會回到清除前。遠端清除也補上，讓任何人都能救回誤清。
+
+   刻意不做「清除需密碼」：多一道密碼只是拖慢正常操作，
+   誤清的真正解法是能救回來。
+   ========================================================= */
+(function(){
+  var base=clearCanvas;
+  window.clearCanvas=function(){
+    if(annoId){base();return;}
+    if(!dctx)return;
+    if(!confirm('清除整個畫布？（包含所有物件，畫布範圍也會回到初始大小）\n清錯了可以按「復原」救回。'))return;
+    clearObjs();initBoardWorld();
+    if(_wbCollab){if(isHost)hostBroadcast({t:'wbclear'});
+      else if(hostConn&&hostConn.open)tSend(hostConn,{t:'wbclear'});}
+    try{pushHistory();}catch(e){}
+    toast('已清除，可按「復原」救回');};
+})();
+
+/* 遠端清除：等物件也清完再記一格，否則歷史會存到「圖清了但物件還在」的中間狀態 */
+(function(){
+  if(typeof wbClearLocal!=='function')return;
+  var base=wbClearLocal,t=null;
+  window.wbClearLocal=function(){
+    base.apply(this,arguments);
+    if(t)clearTimeout(t);
+    t=setTimeout(function(){t=null;try{pushHistory();}catch(e){}},260);};
+})();
+</script>
 </body>
 </html>
