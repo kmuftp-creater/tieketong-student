@@ -820,6 +820,16 @@ body.has-ann .ann-x{top:6px;}
 @keyframes scrblink{0%,100%{opacity:1}50%{opacity:.55}}
 .scr-prev{width:100%;max-height:38vh;border-radius:12px;background:#000;margin:8px 0;display:block;}
 /* v5.3 白板批次 */
+.dobj.dstamp{display:flex;align-items:center;justify-content:center;box-sizing:border-box;}
+.dobj.dstamp svg{width:100%;height:100%;display:block;overflow:visible;}
+.pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.pick-it{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border-radius:12px;
+  border:1.5px solid var(--line);background:rgba(200,165,100,.08);color:var(--tx);cursor:pointer;font-size:12.5px;font-weight:700;}
+.pick-it:hover{border-color:var(--gold2);background:rgba(200,165,100,.18);}
+.pick-it svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.pick-it .sw{width:100%;height:26px;border-radius:7px;border:1px solid var(--line);}
+body.theme-dark .pick-it{background:rgba(255,255,255,.07);}
+.dtool.on{background:rgba(200,165,100,.32);border-color:var(--gold2);}
 .dobj.dwidget{border-radius:14px;box-shadow:0 6px 18px rgba(0,0,0,.2);background:linear-gradient(160deg,#fdfbf5,#f2e8d2);border:2px solid var(--gold2);box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;user-select:none;overflow:hidden;}
 body.theme-dark .dobj.dwidget{background:linear-gradient(160deg,#26202c,#1a1620);border-color:rgba(200,165,100,.5);}
 .dwid-v{font-weight:900;line-height:1;color:var(--navy);}
@@ -1683,6 +1693,15 @@ body.theme-dark .scr-diag{color:#f0e6d4;background:rgba(255,255,255,.06);}
       <button class="btn btn-ghost" style="flex:1 1 110px" onclick="renderAILog()"><svg class="ic" fill="none"><use href="#ic-refresh"/></svg> 更新</button>
       <button class="btn btn-ghost" style="flex:1 1 110px" onclick="clearAILog()"><svg class="ic" fill="none"><use href="#ic-trash"/></svg> 清空</button>
     </div>
+  </div>
+</div>
+
+<!-- ===== 卡片範本 / 圖章 選擇器 ===== -->
+<div class="cmodal" id="tplModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="cm-card">
+    <div class="cm-h"><span id="tplTitle">選擇</span><button class="cm-x" onclick="$('tplModal').classList.remove('show')">✕</button></div>
+    <div class="ms-hint" id="tplHint" style="margin-bottom:10px"></div>
+    <div class="pick-grid" id="tplGrid"></div>
   </div>
 </div>
 
@@ -8812,6 +8831,148 @@ function exportTimeline(){
     b.innerHTML='<svg class="ic" fill="none"><use href="#ic-history"/></svg> 課堂動態';
     b.onclick=openTimeline;
     pop.insertBefore(b,pop.firstChild);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();
+})();
+</script>
+
+<script>
+/* =========================================================
+   卡片範本、圖章、彩繪筆（2026-08-17 新增）
+
+   卡片範本：四種預設便利貼（便條／任務／問題／摘要），各有預設標題、
+     內容骨架與底色，放上去就能直接改，不必從空白開始想格式。
+   圖章：一組向量圖形物件（勾／星／問號／愛心／讚／注意／重點／叉），
+     沿用物件系統，可拖曳縮放旋轉蓋印存檔並即時同步。
+   彩繪筆：筆跡顏色沿路徑循環漸變。因為 applyStroke() 每段筆跡都會被呼叫，
+     而 wbSend 緊接在後面用同一個 drawColor，所以只要在 applyStroke 裡
+     推進色相，本地筆跡與同步給全班的顏色會自動一致，不必改 bindBoard。
+   ========================================================= */
+
+/* ---------- 1. 卡片範本 ---------- */
+var CARD_TPL=[
+ {k:'note', name:'便條', bg:'#ffe27a', w:220, h:150, text:'便條\n（寫下想法）'},
+ {k:'task', name:'任務', bg:'#d7f5d0', w:230, h:165, text:'任務\n負責人：\n期限：'},
+ {k:'ques', name:'問題', bg:'#ffd0d0', w:230, h:160, text:'問題\n（要釐清什麼？）'},
+ {k:'sum',  name:'摘要', bg:'#c9ecff', w:240, h:180, text:'重點摘要\n1.\n2.\n3.'}
+];
+function addCardTpl(k){
+  var t=null;CARD_TPL.forEach(function(c){if(c.k===k)t=c;});
+  if(!t)return;
+  if(!$('drawModal').classList.contains('show')){toast('請先開啟畫布');return;}
+  var n=objs.filter(function(o){return o.type==='note';}).length;
+  addObj({id:uid(),type:'note',x:Math.round(viewX+40+(n%6)*26),y:Math.round(viewY+40+(n%6)*22),
+    w:t.w,h:t.h,rot:0,text:t.text,bg:t.bg,color:'#2a2418',fs:17});
+  $('tplModal').classList.remove('show');
+  toast('已放上「'+t.name+'」卡片，雙擊可編輯');}
+function openCardTpl(){
+  if(!$('drawModal').classList.contains('show')){toast('請先開啟畫布');return;}
+  $('tplTitle').textContent='卡片範本';
+  $('tplHint').textContent='放上白板後雙擊即可改內容；可拖曳、縮放、旋轉，並即時同步全班。';
+  $('tplGrid').innerHTML=CARD_TPL.map(function(c){
+    return '<button class="pick-it" onclick="addCardTpl(\''+c.k+'\')">'+
+      '<span class="sw" style="background:'+c.bg+'"></span>'+esc(c.name)+'</button>';}).join('');
+  $('tplModal').classList.add('show');}
+
+/* ---------- 2. 圖章 ---------- */
+var STAMPS=[
+ {s:'check', name:'勾', d:['M20 6 9 17l-5-5']},
+ {s:'star',  name:'星', d:['M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z']},
+ {s:'ques',  name:'問號', d:['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z','M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3','M12 17h.01']},
+ {s:'heart', name:'愛心', d:['M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7z']},
+ {s:'up',    name:'讚', d:['M7 10v12','M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88z']},
+ {s:'alert', name:'注意', d:['M12 2 2 22h20z','M12 10v4','M12 18h.01']},
+ {s:'focus', name:'重點', d:['M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20z','M12 18a6 6 0 1 0 0-12 6 6 0 0 0 0 12z','M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z']},
+ {s:'cross', name:'叉', d:['M18 6 6 18','M6 6l12 12']}
+];
+function stampDefs(sid){var r=null;STAMPS.forEach(function(x){if(x.s===sid)r=x;});return r||STAMPS[0];}
+function stampSVG(o){
+  var st=stampDefs(o.sid);
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="'+(o.color||'#c5503a')+'" stroke-width="2" '+
+    'stroke-linecap="round" stroke-linejoin="round">'+
+    st.d.map(function(d){return '<path d="'+d+'"/>';}).join('')+'</svg>';}
+function addStamp(sid){
+  if(!$('drawModal').classList.contains('show')){toast('請先開啟畫布');return;}
+  var n=objs.filter(function(o){return o.type==='stamp';}).length;
+  addObj({id:uid(),type:'stamp',sid:sid,x:Math.round(viewX+60+(n%8)*24),y:Math.round(viewY+60+(n%8)*20),
+    w:96,h:96,rot:0,color:(drawColor==='#111111'?'#c5503a':drawColor)});
+  $('tplModal').classList.remove('show');
+  toast('已蓋上「'+stampDefs(sid).name+'」圖章');}
+function openStampPick(){
+  if(!$('drawModal').classList.contains('show')){toast('請先開啟畫布');return;}
+  $('tplTitle').textContent='圖章';
+  $('tplHint').textContent='用目前的畫筆顏色蓋章；蓋上後可拖曳、縮放、旋轉，並即時同步全班。';
+  $('tplGrid').innerHTML=STAMPS.map(function(x){
+    return '<button class="pick-it" onclick="addStamp(\''+x.s+'\')">'+
+      '<svg viewBox="0 0 24 24">'+x.d.map(function(d){return '<path d="'+d+'"/>';}).join('')+'</svg>'+
+      esc(x.name)+'</button>';}).join('');
+  $('tplModal').classList.add('show');}
+
+/* 圖章：元素、同步、蓋印 */
+(function(){var base=makeObjEl;
+  window.makeObjEl=function(o){
+    if(o.type!=='stamp')return base(o);
+    if(!o.src)o.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+    var d=base(o);
+    d.classList.add('dstamp');
+    var im=d.querySelector('img');if(im&&im.parentNode)im.parentNode.removeChild(im);
+    var box=document.createElement('div');box.className='dstamp-in';
+    box.style.cssText='width:100%;height:100%;pointer-events:none;';
+    box.innerHTML=stampSVG(o);
+    d.insertBefore(box,d.firstChild);
+    return d;};})();
+(function(){var bp=objPub,bf=objFromPub;
+  window.objPub=function(o){var b=bp(o);
+    if(o.type==='stamp'){b.sid=o.sid;b.color=o.color;delete b.src;}
+    return b;};
+  window.objFromPub=function(p){var o=bf(p);
+    if(p.type==='stamp'){o.sid=p.sid||'check';o.color=p.color;
+      o.src='data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';}
+    return o;};})();
+(function(){var base=applyObj;
+  window.applyObj=function(m){
+    if(m.op==='add'&&m.o&&m.o.type==='stamp'){
+      if(objById(m.o.id))removeObj(m.o.id,true);
+      addObj(objFromPub(m.o),true);
+      ensureRoom({x0:m.o.x,y0:m.o.y,x1:m.o.x+m.o.w,y1:m.o.y+m.o.h});applyBoardView();return;}
+    base(m);};})();
+(function(){var base=drawObjOn;
+  window.drawObjOn=function(ctx,o,px,py,k){
+    if(o.type!=='stamp')return base(ctx,o,px,py,k);
+    var w=o.w*k,h=o.h*k,X=px*k,Y=py*k;
+    ctx.save();ctx.globalCompositeOperation='source-over';
+    if(o.rot){ctx.translate(X+w/2,Y+h/2);ctx.rotate(o.rot*Math.PI/180);ctx.translate(-w/2,-h/2);X=0;Y=0;}
+    ctx.translate(X,Y);ctx.scale(w/24,h/24);
+    ctx.strokeStyle=o.color||'#c5503a';ctx.lineWidth=2;ctx.lineCap='round';ctx.lineJoin='round';
+    stampDefs(o.sid).d.forEach(function(d){try{ctx.stroke(new Path2D(d));}catch(e){}});
+    ctx.restore();};})();
+
+/* ---------- 3. 彩繪筆 ---------- */
+var _rainbow=false,_rbHue=0,_rbSaved='';
+function toggleRainbow(){
+  if(!_rainbow){_rbSaved=drawColor;_rainbow=true;_rbHue=0;toast('彩繪筆：筆跡會沿路徑漸層變色');}
+  else{_rainbow=false;if(_rbSaved)drawColor=_rbSaved;toast('已切回一般畫筆');}
+  var b=$('dRainbow');if(b)b.classList.toggle('on',_rainbow);
+  try{if(!_rainbow&&_rbSaved&&typeof refreshSw==='function')refreshSw('dsw',_rbSaved);}catch(e){}}
+(function(){var base=applyStroke;
+  window.applyStroke=function(){
+    if(_rainbow&&drawTool!=='erase'){_rbHue=(_rbHue+7)%360;drawColor='hsl('+_rbHue+',85%,52%)';}
+    base();};})();
+
+/* ---------- 工具列入口 ---------- */
+(function(){
+  function ico(id){return '<svg class="ic" fill="none"><use href="#'+id+'"/></svg> ';}
+  function add(){
+    var g=document.getElementById('dNavGroup');
+    if(!g||document.getElementById('dCardTpl'))return;
+    var anchor=document.getElementById('dDice')||null;
+    function mk(id,html,title,fn){
+      var b=document.createElement('button');b.className='dtool';b.id=id;
+      b.innerHTML=html;b.title=title;b.onclick=fn;
+      if(anchor)g.insertBefore(b,anchor);else g.appendChild(b);
+      return b;}
+    mk('dCardTpl',ico('ic-note')+'範本','卡片範本：便條／任務／問題／摘要',openCardTpl);
+    mk('dStamp',ico('ic-stamp')+'圖章','蓋上勾／星／問號／愛心等向量圖章',openStampPick);
+    mk('dRainbow',ico('ic-sparkles')+'彩繪筆','筆跡沿路徑漸層變色（再按一次切回一般畫筆）',toggleRainbow);}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();
 })();
 </script>
