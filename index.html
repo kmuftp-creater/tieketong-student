@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>貼課通 · 學生版（加入課堂）</title>
+<!-- 內嵌 favicon：兩個站台都沒有 favicon.ico，會各留一筆 404。用 data URI 免上傳檔案。
+     學生版藍色、教師版金色，同時開兩個分頁測試時分頁圖示可直接分辨。 -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231c3a5e'/%3E%3Cpath d='M9 7h10l6 6v12a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2z' fill='%23fbf6ea'/%3E%3Cpath d='M19 7l6 6h-6z' fill='%23e7dcc2'/%3E%3Crect x='11' y='16' width='8' height='2' rx='1' fill='%231c3a5e'/%3E%3Crect x='11' y='20' width='11' height='2' rx='1' fill='%231c3a5e'/%3E%3C/svg%3E">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap');
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
@@ -2408,7 +2411,7 @@ function buildCard(p){
     sel.onchange=function(e){e.stopPropagation();setCol(p.id,sel.value);};sel.onclick=function(e){e.stopPropagation();};h.appendChild(sel);}
   if(isHost){var pin=document.createElement('button');pin.className='del pinbtn'+(p.pinned?' on':'');pin.innerHTML='<svg class="ic" fill="none"><use href="#ic-pin"/></svg>';pin.title=p.pinned?'取消置頂':'置頂／精選';
     pin.onclick=function(){togglePin(p.id);};h.appendChild(pin);}
-  if(iCanDraw()){var anb=document.createElement('button');anb.className='del anbtn';anb.innerHTML='<svg class="ic" fill="none"><use href="#ic-pencil"/></svg>';anb.title='在這張卡片上塗鴉標註';
+  if(iCanAnnotate()){var anb=document.createElement('button');anb.className='del anbtn';anb.innerHTML='<svg class="ic" fill="none"><use href="#ic-pencil"/></svg>';anb.title='在這張卡片上塗鴉標註';
     anb.onclick=function(){annotateCard(p.id);};h.appendChild(anb);}
   if(mine){var edt=document.createElement('button');edt.className='del editbtn';edt.innerHTML='<svg class="ic" fill="none"><use href="#ic-pencil"/></svg>';edt.title='編輯我的貼文';
     edt.onclick=function(){openPost(p.id);};h.appendChild(edt);}
@@ -2826,22 +2829,8 @@ function loadMaterials(){try{var r=localStorage.getItem('shr_mat_lib');materials
 function saveMaterials(){try{localStorage.setItem('shr_mat_lib',JSON.stringify(materials));}catch(e){}}
 function matFind(id){for(var i=0;i<materials.length;i++)if(materials[i].id===id)return materials[i];return null;}
 function openMaterials(){renderMaterials();$('materialModal').classList.add('show');}
-function renderMaterials(){var b=$('matBody');if(!b)return;var inRoom=isHost&&roomCodeStr;
-  var h='<div class="ms-hint" style="margin-bottom:8px">'+(inRoom?'課前準備好的貼文，按「▶ 推出」即可發布到牆面（可重複推出）。':'先把貼文／題目準備好（存在本機，可重複使用）；進入教室後（房主）即可一鍵推出。')+'</div>';
-  h+='<div class="mat-add"><input id="matSubj" maxlength="40" placeholder="主題（選填）"><textarea id="matText" rows="3" placeholder="內容／題目…"></textarea>';
-  h+='<div class="mat-colors" id="matColors"></div>';
-  h+='<button class="btn btn-gold" onclick="saveMaterial()">'+(_matEdit?'更新教材':'＋ 加入教材庫')+'</button>'+(_matEdit?'<button class="btn btn-ghost" style="margin-top:6px" onclick="cancelMatEdit()">取消編輯</button>':'')+'</div>';
-  h+='<div class="mat-list">';
-  if(!materials.length)h+='<div class="mat-empty">教材庫是空的，先在上方新增。</div>';
-  else materials.forEach(function(m){var snip=esc((m.subject?('【'+m.subject+'】'):'')+(m.text||'')).slice(0,80);
-    h+='<div class="mat-item"'+(m.color?(' style="border-left:4px solid '+m.color+'"'):'')+'><div class="mi-txt">'+snip+'</div><div class="mi-btns">'+
-      '<button class="mi-push" onclick="pushMaterial(\''+m.id+'\')"'+(inRoom?'':' disabled')+'>▶ 推出</button>'+
-      '<button class="mi-edit" onclick="editMaterial(\''+m.id+'\')"><svg class="ic" fill="none"><use href="#ic-pencil"/></svg></button>'+
-      '<button class="mi-del" onclick="deleteMaterial(\''+m.id+'\')">✕</button></div></div>';});
-  h+='</div>';b.innerHTML=h;
-  var cw=$('matColors');if(cw){cw.innerHTML='';CARD_COLORS.forEach(function(cc){var d=document.createElement('div');d.className='cc-sw'+(cc.c===_matColor?' active':'');d.style.background=cc.c||'linear-gradient(135deg,#fdfbf5,#e7dcc2)';d.title=cc.n;
-    d.onclick=function(){_matColor=cc.c;var all=cw.querySelectorAll('.cc-sw');for(var j=0;j<all.length;j++)all[j].classList.remove('active');d.classList.add('active');};cw.appendChild(d);});}
-  if(_matEdit){var m=matFind(_matEdit);if(m){$('matSubj').value=m.subject||'';$('matText').value=m.text||'';}}}
+/* renderMaterials 舊版（v3）已於 2026-08-17 移除：被下方 script 區塊的同名函式整個覆寫，
+   永遠不會被呼叫。現行版本在教材庫改版後含分類與批次欄位。 */
 function saveMaterial(){var subj=($('matSubj').value||'').trim();var text=($('matText').value||'').trim();
   if(!subj&&!text){toast('請輸入主題或內容');return;}
   if(_matEdit){var m=matFind(_matEdit);if(m){m.subject=subj;m.text=text;m.color=_matColor;}_matEdit=null;}
@@ -3099,52 +3088,8 @@ function copyCode(){if(navigator.clipboard)navigator.clipboard.writeText(roomCod
 function memberArray(){var a=[];for(var id in members)a.push({id:id,name:members[id].name,viewOnly:!!members[id].viewOnly,canDraw:!!members[id].canDraw});return a;}
 function updateMemUI(){$('memCount').textContent=memberArray().length+(isHost&&pendingCount()>0?(' +'+pendingCount()):'');}
 function connByUid(uid){for(var k in conns){if(conns[k]._uid===uid)return conns[k];}return null;}
-function openMembers(){var l=$('memList');l.innerHTML='';
-  if(isHost){
-    if(pendingCount()>0){var pq=document.createElement('div');pq.className='mem-setting pend-box';
-      var h='<div class="ms-title"><svg class="ic" fill="none"><use href="#ic-bell"/></svg> 排隊等待加入（'+pendingCount()+' 人）</div>';
-      for(var uid in pending){(function(uid){h+='<div class="pend-row" data-u="'+uid+'"><span class="pend-name">'+esc(pending[uid].name)+'</span><button class="qbtn ok" onclick="admitPending(\''+uid+'\')">准許</button><button class="qbtn no" onclick="rejectPending(\''+uid+'\')">拒絕</button></div>';})(uid);}
-      pq.innerHTML=h;l.appendChild(pq);}
-    var st=document.createElement('div');st.className='mem-setting';
-    st.innerHTML='<div class="ms-row"><span>學員可開啟／下載 檔案·PDF</span><button class="toggle'+(allowOpen?' on':'')+'" id="aoToggle" onclick="toggleAllowOpen()">'+(allowOpen?'開':'關')+'</button></div><div class="ms-hint">關閉後，檔案不會傳到學員端，避免個資被取走（只看得到檔名）。</div>'+
-      '<div class="ms-row" style="margin-top:12px"><span>每人貼文上限（0＝不限）</span><input id="maxPostsIn" type="number" min="0" max="99" value="'+maxPosts+'" class="ms-num" onchange="setMaxPosts(this.value)"></div><div class="ms-hint">避免洗版；學員超過上限將無法再貼（房主不受限）。</div>';
-    l.appendChild(st);
-    var nStu=memberArray().filter(function(m){return m.id!==myId;}).length;
-    var q=document.createElement('div');q.className='mem-setting';
-    q.innerHTML='<div class="ms-title">快速權限・一鍵套用所有學員（'+nStu+' 人）</div>'+
-      '<div class="ms-qrow"><span class="ms-lab">塗鴉</span><button class="qbtn ok" onclick="setAllDraw(true)">全部允許</button><button class="qbtn no" onclick="setAllDraw(false)">全部禁止</button></div>'+
-      '<div class="ms-qrow"><span class="ms-lab">貼文</span><button class="qbtn ok" onclick="setAllViewOnly(false)">全部可貼</button><button class="qbtn no" onclick="setAllViewOnly(true)">全部唯讀</button></div>';
-    l.appendChild(q);
-    var allRO=nStu>0&&memberArray().filter(function(m){return m.id!==myId;}).every(function(m){return m.viewOnly;});
-    var tl=document.createElement('div');tl.className='mem-setting';
-    tl.innerHTML='<div class="ms-title">課堂工具</div><div class="ms-tools">'+
-      '<button class="tbtn" onclick="randomPick()"><svg class="ic" fill="none"><use href="#ic-dices"/></svg> 隨機抽人</button>'+
-      '<button class="tbtn" onclick="openTimer(\'\')"><svg class="ic" fill="none"><use href="#ic-timer"/></svg> 計時器</button>'+
-      '<button class="tbtn'+(allRO?' active':'')+'" onclick="toggleLockAll()"><svg class="ic" fill="none"><use href="#ic-lock"/></svg> '+(allRO?'解除全室唯讀':'全室唯讀')+'</button></div>';
-    l.appendChild(tl);
-    var ch=document.createElement('div');ch.className='mem-setting';
-    ch.innerHTML='<div class="ms-title">房主備援・副房主</div><div class="ms-hint">'+(nStu>0?'在下方任一學員的名字旁點「設為副房主」。':'目前沒有其他學員在線；待學員加入後，其名字旁就會出現「設為副房主」按鈕。')+(coHostId&&members[coHostId]?('　目前副房主：<b>'+esc(members[coHostId].name)+'</b>。'):'')+'老師若意外離線或斷線，副房主會自動接手成為房主，房間代碼不變，全班自動重連，課堂不中斷。</div>';
-    l.appendChild(ch);}
-  memberArray().forEach(function(m){
-  var d=document.createElement('div');d.className='mem-item';
-  var av=document.createElement('div');av.className='av';av.style.background=avColor(m.name);av.textContent=initial(m.name);av.style.width='34px';av.style.height='34px';av.style.fontSize='14px';
-  var nm=document.createElement('div');nm.className='nm';nm.textContent=m.name;
-  d.appendChild(av);d.appendChild(nm);
-  if(m.id===myId){var b=document.createElement('span');b.className='badge';b.textContent=isHost?'房主':'你';d.appendChild(b);}
-  if(m.viewOnly){var v=document.createElement('span');v.className='badge vo';v.textContent='唯讀';d.appendChild(v);}
-  if(coHostId&&coHostId===m.id){var chb1=document.createElement('span');chb1.className='badge';chb1.style.background='rgba(120,160,235,.22)';chb1.style.color='#2f5fa0';chb1.textContent='副房主';d.appendChild(chb1);}
-  if(m.canDraw&&m.id!==myId){var cd=document.createElement('span');cd.className='badge dr';cd.textContent='可塗鴉';d.appendChild(cd);}
-  if(isHost&&m.id!==myId){
-    var ch2=document.createElement('button');ch2.className='mbtn';ch2.textContent=(coHostId===m.id)?'取消副房主':'設為副房主';ch2.onclick=function(){setCoHost(m.id);};d.appendChild(ch2);
-    var dr=document.createElement('button');dr.className='mbtn';dr.textContent=m.canDraw?'禁止塗鴉':'允許塗鴉';
-    dr.onclick=function(){toggleCanDraw(m.id);};d.appendChild(dr);
-    var t=document.createElement('button');t.className='mbtn';t.textContent=m.viewOnly?'設為可貼':'設為唯讀';
-    t.onclick=function(){toggleViewOnly(m.id);};d.appendChild(t);
-    var k=document.createElement('button');k.className='mbtn kick';k.textContent='退出';
-    k.onclick=function(){kickMember(m.id);};d.appendChild(k);
-  }
-  l.appendChild(d);});
-  $('memSheet').classList.add('show');}
+/* openMembers 舊版（v3）已於 2026-08-17 移除：它被下方 script 區塊的同名函式整個覆寫，
+   永遠不會被呼叫，只是讓重複 id 檢查一直有雜訊。現行版本含副房主、簽到等 v7.4 欄位。 */
 function closeMembers(){$('memSheet').classList.remove('show');}
 function toggleAllowOpen(){if(!isHost)return;allowOpen=!allowOpen;
   hostBroadcast({t:'resync',feed:sanitizeFeed(feed),members:members,allowOpen:allowOpen});
@@ -3399,7 +3344,7 @@ function caPlaceText(e){var inp=$('annoTextIn');var p=caPos(e);inp._cx=p.x;inp._
   inp.style.left=e.clientX+'px';inp.style.top=(e.clientY-16)+'px';inp.style.color=drawColor;inp.style.fontSize=Math.max(16,drawSize*4)+'px';inp.value='';inp.style.display='block';setTimeout(function(){inp.focus();},10);}
 function caCommitText(){var inp=$('annoTextIn');if(inp.style.display==='none'||!cAnno.ctx)return;var t=inp.value;inp.style.display='none';if(!t)return;
   var c=cAnno.ctx;c.globalCompositeOperation='source-over';c.fillStyle=drawColor;c.font='700 '+(Math.max(16,drawSize*4)*cAnno.scale)+'px "Noto Sans TC",sans-serif';c.textBaseline='middle';c.fillText(t,inp._cx,inp._cy);}
-function annotateCard(id){var p=findPost(id);if(!p)return;if(!iCanDraw())return;
+function annotateCard(id){var p=findPost(id);if(!p)return;if(!iCanAnnotate())return;
   if(cAnno.id)closeCardAnno();
   var card=$('feed').querySelector('.card[data-id="'+cssEsc(id)+'"]');if(!card)return;
   cAnno.id=id;cAnno.card=card;card.classList.add('annotating');
@@ -3848,7 +3793,15 @@ function openMembers(){var l=$('memList');l.innerHTML='';
       '<button class="tbtn" onclick="openTimer(\'\')"><svg class="ic" fill="none"><use href="#ic-timer"/></svg> 計時器</button>'+
       '<button class="tbtn" onclick="closeMembers();openRoster()"><svg class="ic" fill="none"><use href="#ic-clipboard"/></svg> 點名／出席</button>'+
       '<button class="tbtn'+(allRO?' active':'')+'" onclick="toggleLockAll()"><svg class="ic" fill="none"><use href="#ic-lock"/></svg> '+(allRO?'解除全室唯讀':'全室唯讀')+'</button></div>';
-    l.appendChild(tl);}
+    l.appendChild(tl);
+    /* 房主備援說明區。v7.4 改寫成員面板時漏搬，導致交接功能上線後沒有 UI 入口，
+       只能從 console 呼叫 setCoHost()。2026-08-17 補回。 */
+    var ch=document.createElement('div');ch.className='mem-setting';
+    ch.innerHTML='<div class="ms-title">房主備援・副房主</div><div class="ms-hint">'+
+      (nStu>0?'在下方任一學員的名字旁點「設為副房主」。':'目前沒有其他學員在線；待學員加入後，其名字旁就會出現「設為副房主」按鈕。')+
+      (coHostId&&members[coHostId]?('　目前副房主：<b>'+esc(members[coHostId].name)+'</b>。'):'')+
+      '老師若意外離線或斷線，副房主會自動接手成為房主，房間代碼不變，全班自動重連，課堂不中斷。</div>';
+    l.appendChild(ch);}
   memberArray().forEach(function(m){
     var d=document.createElement('div');d.className='mem-item';
     var av=document.createElement('div');av.className='av';av.style.background=avColor(m.name);av.textContent=initial(m.name);av.style.width='34px';av.style.height='34px';av.style.fontSize='14px';
@@ -3859,10 +3812,13 @@ function openMembers(){var l=$('memList');l.innerHTML='';
     if(m.noComment&&m.id!==myId){var nc=document.createElement('span');nc.className='badge nc';nc.textContent='禁發言';d.appendChild(nc);}
     if(m.noAsk&&m.id!==myId){var na=document.createElement('span');na.className='badge na';na.textContent='禁提問';d.appendChild(na);}
     if(m.canDraw&&m.id!==myId){var cd=document.createElement('span');cd.className='badge dr';cd.textContent='可塗鴉';d.appendChild(cd);}
+    if(coHostId&&coHostId===m.id){var chb=document.createElement('span');chb.className='badge';chb.style.background='rgba(120,160,235,.22)';chb.style.color='#2f5fa0';chb.textContent='副房主';d.appendChild(chb);}
     if(m.id!==myId&&(isHost||allowDM)){
       var dm=document.createElement('button');dm.className='mbtn';dm.innerHTML='<svg class="ic" fill="none"><use href="#ic-mail"/></svg> 私訊';
       dm.onclick=function(){closeMembers();openDM(m.id);};d.appendChild(dm);}
     if(isHost&&m.id!==myId){
+      var ch2=document.createElement('button');ch2.className='mbtn';ch2.textContent=(coHostId===m.id)?'取消副房主':'設為副房主';
+      ch2.onclick=function(){setCoHost(m.id);};d.appendChild(ch2);
       var t1=document.createElement('button');t1.className='mbtn '+(m.viewOnly?'off':'on');t1.textContent=(m.viewOnly?'✖':'✔')+' 貼文';
       t1.onclick=function(){toggleViewOnly(m.id);};d.appendChild(t1);
       var t2=document.createElement('button');t2.className='mbtn '+(m.noComment?'off':'on');t2.textContent=(m.noComment?'✖':'✔')+' 發言';
@@ -6291,8 +6247,14 @@ var _pendingStrokeHist=false;
 var assign={on:false,title:'',desc:'',ts:''};
 var _lastSubmitTitle='';
 
-/* ---- 學員一律可以開自己的畫布（canDraw 只管協作白板能否落筆） ---- */
+/* ---- 畫布權限分成兩件事，不要再合成一個閘門 ----
+   iCanDraw()     ：能否開「自己的畫布」與在協作白板落筆。一律放行。
+                    （學員要靠這個交作業；協作白板本來就是大家一起畫）
+   iCanAnnotate() ：能否在「別人的卡片」上塗鴉標註。受成員面板的 canDraw 開關管制。
+   後者必須與房主端 canDrawUid()（annoupdate／annostroke／annoclear）一致，
+   否則 UI 會讓學員畫得下去，房主端卻靜靜丟掉。 */
 function iCanDraw(){return true;}
+function iCanAnnotate(){return isHost||!!(members[myId]&&members[myId].canDraw);}
 function setDrawUI(){
   var d=$('drawBtn');if(d){d.style.display=(myViewOnly&&!isHost)?'none':'inline-block';
     d.title=isHost?'塗鴉畫布':'我的畫布（可提交作品）';}
@@ -6432,9 +6394,16 @@ function exportSubmits(){
       if($('submitModal').classList.contains('show'))setTimeout(renderSubmitStat,150);
       if($('assignModal').classList.contains('show'))setTimeout(renderAssignState,150);}
     return r;};
+  /* 同一份作業只通知一次。sendInit 每次都會補送 assign（見下方包裝），
+     所以重連、房主交接、resync 都會重收——不去重就會每遷移一次跳一次。 */
+  var _assignNoticed='';
+  function assignSig(a){return (a&&a.on)?(String(a.ts||'')+'::'+String(a.title||'')):'';}
   window.guestHandleX=function(o){
     if(o.t==='assign'){assign=o.assign||{on:false,title:'',desc:'',ts:''};applyAssignUI();
-      if(assign.on)notice('📤 老師發布了作業：'+assign.title);return true;}
+      if(!assign.on){_assignNoticed='';return true;}
+      var sig=assignSig(assign);
+      if(sig!==_assignNoticed){_assignNoticed=sig;notice('📤 老師發布了作業：'+assign.title);}
+      return true;}
     if(o.t==='remind'){notice('⏰ 老師提醒你提交作品'+(o.title?('：'+o.title):''));
       toast('⏰ 老師提醒你提交作品');return true;}
     if(o.t==='init'&&o.assign){assign=o.assign;setTimeout(applyAssignUI,200);}
