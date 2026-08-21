@@ -51,12 +51,12 @@ input,textarea{font-family:inherit;}
 .r-info{font-size:13px;color:var(--tx);margin-bottom:10px;}
 .r-btns{display:flex;gap:8px;}
 .r-yes{flex:1;background:#b75b38;color:#fff;font-weight:700;padding:10px;border-radius:9px;font-size:14px;}
-.r-no{flex:0 0 auto;background:rgba(35,35,35,.08);color:var(--mut);padding:10px 16px;border-radius:9px;font-size:13px;}
+.r-no{flex:0 0 auto;background:rgba(35,35,35,.08);color:#5a5a5a;padding:10px 16px;border-radius:9px;font-size:13px;}
 .btn-ghost{margin-top:10px;background:rgba(35,35,35,.05);border:1px solid var(--line);color:var(--gold-tx);font-weight:600;}
 /* 確保收合時內容確實隱藏 */
 details.netset:not([open]) > :not(summary){display:none;}
 .hist-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-.hist-clear{background:rgba(255,90,90,.12);border:1px solid rgba(255,90,90,.4);color:#c5503a;font-size:12.5px;padding:6px 12px;border-radius:8px;}
+.hist-clear{background:rgba(197,80,58,.12);border:1px solid rgba(197,80,58,.42);color:#a33322;font-size:12.5px;padding:6px 12px;border-radius:8px;}
 .hist-hint{font-size:12px;color:var(--mut);margin:6px 0 12px;line-height:1.5;}
 .hist-empty{text-align:center;color:var(--mut);padding:28px 0;font-size:14px;}
 #histSheet .sheet-c{max-height:84vh;padding:22px 22px 26px;}
@@ -113,13 +113,17 @@ body.theme-dark .hist-card{box-shadow:0 8px 22px rgba(0,0,0,.45);}
 .tbtn.active{background:rgba(120,160,235,.18);color:#2f5fa0;border-color:rgba(120,160,235,.4);}
 
 /* shared timer badge */
-.timer-badge{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:115;display:none;align-items:center;gap:8px;background:#fffdf9;border:1px solid var(--gold2);border-radius:14px;padding:8px 16px;box-shadow:4px 4px 0 rgba(35,35,35,.26);}
+/* 課堂中要從教室後排讀得到，尺寸不能小 */
+.timer-badge{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:115;display:none;align-items:center;gap:14px;background:var(--paper-hi);border:2px solid var(--gold);border-radius:16px;padding:12px 22px;box-shadow:5px 5px 0 rgba(35,35,35,.26);}
 .timer-badge.show{display:flex;}
-.timer-badge #timerLabel{font-size:14px;font-weight:700;color:#dfe6f2;}
-.lobby-timer{width:100%;margin:0 0 16px;background:rgba(120,160,235,.12);border:1px solid rgba(120,160,235,.35);color:#bcd0f5;font-weight:700;font-size:14px;padding:12px;border-radius:11px;}
-.timer-badge #timerTime{font-size:24px;font-weight:800;color:var(--gold-tx);font-variant-numeric:tabular-nums;letter-spacing:1px;}
-.timer-badge.done{border-color:#c5503a;}.timer-badge.done #timerTime{color:#c5503a;}
-.tb-x{background:rgba(255,90,90,.15);border:1px solid rgba(255,90,90,.4);color:#c5503a;border-radius:7px;padding:3px 8px;font-size:12px;}
+/* 原本是 #dfe6f2（深底時代的淺藍），配現在的白底對比只有 1.1 */
+.timer-badge #timerLabel{font-size:15px;font-weight:800;color:var(--tx);background:rgba(35,35,35,.07);border-radius:8px;padding:3px 10px;white-space:nowrap;}
+.lobby-timer{width:100%;margin:0 0 16px;background:rgba(57,116,91,.1);border:1px solid rgba(57,116,91,.4);color:#2b5c47;font-weight:700;font-size:14px;padding:12px;border-radius:11px;}
+.timer-badge #timerTime{font-size:34px;font-weight:900;color:var(--gold-tx);font-variant-numeric:tabular-nums;letter-spacing:1.5px;line-height:1.1;}
+.timer-badge.done{border-color:#c5503a;}
+.timer-badge.done #timerTime{color:#a33322;}
+.timer-badge.done #timerLabel{background:rgba(197,80,58,.14);color:#a33322;}
+.tb-x{background:rgba(197,80,58,.12);border:1px solid rgba(197,80,58,.45);color:#a33322;border-radius:8px;padding:6px 11px;font-size:14px;font-weight:800;line-height:1;}
 
 /* generic center modal */
 .cmodal{position:fixed;inset:0;z-index:118;background:rgba(45,33,12,.42);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:18px;}
@@ -264,8 +268,8 @@ body.theme-dark .tb-pop{background:rgba(28,31,42,.99);border-color:rgba(255,255,
 .ms-num{width:64px;background:rgba(35,35,35,.06);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:6px 8px;font-size:14px;text-align:center;}
 .filter-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;max-width:1100px;margin:0 auto 14px;padding:10px 12px;background:rgba(35,35,35,.04);border:1px solid var(--line);border-radius:13px;}
 .flt-kw{flex:1;min-width:160px;background:rgba(35,35,35,.06);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:9px 12px;font-size:14px;}
-.flt-sel{background:#f5f3ef;border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:9px 10px;font-size:13.5px;}
-.flt-clr{background:rgba(35,35,35,.06);border:1px solid var(--line);color:var(--mut);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;}
+.flt-sel{background:var(--paper);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:9px 10px;font-size:13.5px;}
+.flt-clr{background:rgba(35,35,35,.06);border:1px solid var(--line);color:#5a5a5a;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600;}
 /* announce marquee */
 .announce-bar{position:fixed;top:0;left:0;right:0;z-index:90;display:flex;align-items:center;background:#b75b38;color:#f3e7cf;height:34px;overflow:hidden;box-shadow:0 1px 0 rgba(217,212,204,1);}
 .ann-track{display:inline-flex;white-space:nowrap;animation:annscroll 18s linear infinite;font-weight:800;font-size:14px;}
@@ -274,12 +278,13 @@ body.theme-dark .tb-pop{background:rgba(28,31,42,.99);border-color:rgba(255,255,
 .ann-x{position:absolute;right:8px;top:5px;background:rgba(35,35,35,.05);border:none;color:#f3e7cf;width:24px;height:24px;border-radius:50%;font-weight:800;}
 /* freeze overlay */
 .freeze-ov{position:fixed;inset:0;z-index:120;background:rgba(45,33,12,.9);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;}
-.fz-box{text-align:center;font-size:64px;color:#2f5fa0;}
+.fz-box{text-align:center;font-size:64px;color:#9ec4ff;}
 .fz-t{font-size:24px;font-weight:800;color:#eef2f8;margin-top:10px;}
-.fz-s{font-size:15px;color:var(--mut);margin-top:6px;}
+.fz-s{font-size:15px;color:#e8e4de;margin-top:6px;}
 /* check-in bar */
 .checkin-bar{position:fixed;top:44px;left:50%;transform:translateX(-50%);z-index:95;display:flex;align-items:center;gap:12px;background:#39745b;border:1px solid var(--gold2);border-radius:14px;padding:10px 14px;box-shadow:4px 4px 0 rgba(35,35,35,.26);}
-.checkin-bar span{font-weight:700;color:var(--gold-tx);font-size:14px;}
+/* 簽到列底是綿色，同樣不能用 --gold-tx */
+.checkin-bar span{font-weight:700;color:#fff;font-size:14px;}
 .checkin-bar button{background:#b75b38;border:none;color:#fff;border-radius:10px;padding:9px 14px;font-weight:800;font-size:14px;}
 /* roster */
 .r-sum{font-size:12.5px;font-weight:700;color:var(--mut);margin-left:10px;}
@@ -429,7 +434,7 @@ img.shot{width:100%;max-height:300px;object-fit:cover;border-radius:10px;display
 .attach-prev.show{display:flex;}
 .attach-prev img{width:52px;height:52px;object-fit:cover;border-radius:8px;}
 .attach-prev .nm{font-size:12.5px;color:var(--mut);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.attach-prev .rm{color:#c5503a;background:none;font-size:18px;padding:0 6px;}
+.attach-prev .rm{color:#a33322;background:none;font-size:18px;padding:0 6px;}
 
 /* members sheet */
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:50;}
@@ -474,7 +479,8 @@ img.shot{width:100%;max-height:300px;object-fit:cover;border-radius:10px;display
 .ss-nav:disabled{opacity:.25;}
 .ss-nav.prev{left:16px;} .ss-nav.next{right:16px;}
 .ss-bottom{display:flex;align-items:center;gap:14px;justify-content:center;padding:12px 18px;}
-.ss-pg{background:rgba(183,91,56,.14);border:1px solid var(--line);color:var(--gold-tx);padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;}
+/* 簡報列固定是深底，不能用會隨主題翻轉的 --gold-tx */
+.ss-pg{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.35);color:#f0e6e0;padding:9px 16px;border-radius:10px;font-weight:700;font-size:14px;}
 .ss-pg:disabled{opacity:.3;}
 .ss-dots{display:flex;gap:6px;max-width:54vw;overflow-x:auto;padding:4px 2px;}
 .ss-dot{width:9px;height:9px;border-radius:50%;background:rgba(35,35,35,.16);flex:0 0 auto;cursor:pointer;}
@@ -590,8 +596,8 @@ img.shot{width:100%;max-height:300px;object-fit:cover;border-radius:10px;display
 .sv-stage{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;}
 .sv-stage video{max-width:100%;max-height:100%;background:#000;}
 .sv-bar{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0d0f16;border-top:1px solid var(--line);}
-.sv-title{flex:1;font-size:14px;font-weight:700;color:var(--gold-tx);}
-.sv-btn{background:rgba(35,35,35,.08);border:1px solid var(--line);color:#1d1d1d;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;}
+.sv-title{flex:1;font-size:14px;font-weight:700;color:#f0e6e0;}
+.sv-btn{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.38);color:#f0e6e0;border-radius:9px;padding:8px 13px;font-size:13px;font-weight:700;cursor:pointer;}
 .share-pill{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:115;background:#b75b38;color:#fff;font-weight:700;font-size:13px;padding:10px 18px;border-radius:20px;box-shadow:4px 4px 0 rgba(35,35,35,.24);cursor:pointer;}
 
 .share-screennote{background:rgba(35,35,35,.06);border:1px dashed var(--line);border-radius:12px;padding:20px 14px;text-align:center;color:var(--gold-tx);font-weight:800;font-size:15px;}
@@ -636,6 +642,29 @@ body.theme-dark .filecard{background:rgba(0,0,0,.24);}
 /* 深色主題把文字用的陶土色換成亮階，一行解決所有用 --gold-tx 的地方 */
 body.theme-dark{--gold-tx:#e8a184;}
 /* 離開鈕與空牆文字在兩個主題下都差一點對比 */
+/* 計時徽章原本完全沒有深色規則，切到深色仍是白底白框。 */
+/* 深色主題原本只重定義了 --tx／--card／--line，漏掉 --paper 與 --paper-hi，
+   於是用這兩個變數的面板（成員面板、篩選列…）在深色下仍是白底，
+   文字却已經轉亮，變成白底亮字。 */
+body.theme-dark{--paper:#171717;--paper-hi:#1d1d1d;}
+/* 畫布外殼與卡片標註列在深色下仍是亮底。
+   畫布本體 #drawArea 與導覽圖 #dMini 不動——那是「在白紙上畫」。 */
+body.theme-dark .draw{background:#141414;}
+body.theme-dark #annoBar{background:#1d1d1d;border-color:rgba(255,255,255,.16);}
+body.theme-dark .r-no,body.theme-dark .flt-clr{color:#c4bfb7;border-color:rgba(255,255,255,.18);}
+body.theme-dark .flt-sel{color:#efece6;}
+/* 原生下拉的 option 不吃父層背景，要單獨給 */
+body.theme-dark select option,body.theme-dark .flt-sel option{background:#1d1d1d;color:#efece6;}
+body.theme-dark .hist-hint,body.theme-dark .hist-sub{color:#a9a49c;}
+body.theme-dark .hist-clear{color:#ff9c86;background:rgba(197,80,58,.2);border-color:rgba(255,140,120,.5);}
+body.theme-dark .rm{color:#ff9c86;}
+body.theme-dark .sheet-c h3,body.theme-dark .hist-wrap h3{color:#efece6;}
+body.theme-dark .timer-badge{background:#1d1d1d;border-color:var(--gold);}
+body.theme-dark .timer-badge #timerLabel{color:#efece6;background:rgba(255,255,255,.1);}
+body.theme-dark .timer-badge.done #timerLabel{color:#ff9c86;background:rgba(197,80,58,.22);}
+body.theme-dark .timer-badge.done #timerTime{color:#ff9c86;}
+body.theme-dark .tb-x{color:#ff9c86;background:rgba(197,80,58,.2);border-color:rgba(255,140,120,.5);}
+body.theme-dark .lobby-timer{background:rgba(90,200,165,.12);border-color:rgba(90,200,165,.38);color:#7ede9c;}
 body.theme-dark .rb-x{color:#ff9c86;}
 body.theme-dark .wall-empty{color:#b9b4ac;}
 body.theme-dark .rail-code span{color:#e8a184;}
@@ -11217,7 +11246,7 @@ function ocrEngineHint(){
    否則 User 回報問題時附的版本號就對不上實際跑的那份。
    規則：修缺陷進位數（2.1.0→2.1.1），新功能進次版號（2.1→2.2）。
    ========================================================= */
-var APP_VER='2.1.1';
+var APP_VER='2.1.2';
 var APP_BUILD='2026-08-22';
 /* _block 是 IIFE 內的區域函式，兩版都取不到，改看建置時就固定的標題。
    這段在進教室之前執行，標題還沒被教室名稱賓換。 */
