@@ -1185,7 +1185,7 @@ body.theme-dark .send-st.bad{color:#ff9c86;}
 <!-- ===================== LOBBY ===================== -->
 <div id="lobby">
   <div class="brand-lockup"><span class="brand-mark">T</span><span class="brand-txt"><strong>貼課通</strong><small>TieKeTong · 課堂即時牆</small></span></div>
-  <div class="tag">輸入老師提供的房間代碼，加入課堂一起貼文字、圖片、影音、PDF — 即時同步</div>
+  <div class="tag">輸入老師提供的房間代碼，加入課堂一起貼文字、圖片、影音 — 即時同步</div>
 
   <div class="restore" id="restore" style="display:none">
     <div class="r-info" id="rInfo"></div>
@@ -1338,12 +1338,12 @@ body.theme-dark .send-st.bad{color:#ff9c86;}
         <div class="pm-tools">
           <button class="pm-tool" onclick="insertCodeBlock()"><span class="i"><svg class="ic" fill="none"><use href="#ic-code"/></svg></span><span>程式碼</span></button>
           <button class="pm-tool" onclick="pickImage()"><span class="i"><svg class="ic" fill="none"><use href="#ic-image"/></svg></span><span>圖片</span></button>
-          <button class="pm-tool" onclick="pickFile()"><span class="i"><svg class="ic" fill="none"><use href="#ic-paperclip"/></svg></span><span>檔案 / PDF</span></button>
+          <button class="pm-tool" onclick="pickFile()"><span class="i"><svg class="ic" fill="none"><use href="#ic-paperclip"/></svg></span><span>檔案</span></button>
           <button class="pm-tool" onclick="openCamera()"><span class="i"><svg class="ic" fill="none"><use href="#ic-camera"/></svg></span><span>拍照</span></button>
           <button class="pm-tool" onclick="openRecorder()"><span class="i"><svg class="ic" fill="none"><use href="#ic-mic"/></svg></span><span>錄音</span></button>
           <button class="pm-tool" id="dictBtn" onclick="toggleDictate()"><span class="i"><svg class="ic" fill="none"><use href="#ic-micvocal"/></svg></span><span class="dl">語音輸入</span></button>
         </div>
-        <div class="pm-hint">可上傳圖片、PDF 或文件，也能直接把圖片貼到下方內容</div>
+        <div class="pm-hint">可上傳圖片或文件，也能直接把圖片貼到下方內容</div>
       </div>
       <div class="attach-prev" id="attachPrev">
         <img id="attachImg" alt="">
@@ -11213,9 +11213,11 @@ function ocrEngineHint(){
    繼續沿用上游編號會分不清楚「這台電腦上的是哪一份」，
    所以改用本專案自己的編號，從 2.0 起算（主版號.次版號 加上建置日期）。
    1.x 保留給「重新設計後、併入 v7.4 之前」那段早期版本，不回溯標註。
-   改版上線前記得同步改這兩個值。
+   **每一次改動上線都要同步改這兩個值**，
+   否則 User 回報問題時附的版本號就對不上實際跑的那份。
+   規則：修缺陷進位數（2.1.0→2.1.1），新功能進次版號（2.1→2.2）。
    ========================================================= */
-var APP_VER='2.0';
+var APP_VER='2.1.1';
 var APP_BUILD='2026-08-22';
 /* _block 是 IIFE 內的區域函式，兩版都取不到，改看建置時就固定的標題。
    這段在進教室之前執行，標題還沒被教室名稱賓換。 */
