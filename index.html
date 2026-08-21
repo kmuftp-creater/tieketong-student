@@ -112,6 +112,18 @@ body.theme-dark .hist-card{box-shadow:0 8px 22px rgba(0,0,0,.45);}
 .cm-x{background:rgba(120,95,40,.08);border:1px solid var(--line);color:var(--tx);border-radius:8px;padding:5px 10px;font-size:13px;}
 .qr-box{display:flex;align-items:center;justify-content:center;background:#fff;border-radius:12px;padding:14px;min-height:200px;}
 .qr-box img,.qr-box canvas{display:block;}
+.tpl-card{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;border:1px solid var(--line);border-radius:14px;padding:14px;background:rgba(120,95,40,.06);cursor:pointer;}
+.tpl-card:hover{background:rgba(232,196,122,.18);border-color:var(--gold);}
+.tpl-card b{font-size:15.5px;color:var(--tx);font-weight:800;display:flex;align-items:center;gap:6px;}
+.tpl-card span{font-size:12px;color:var(--mut);line-height:1.6;}
+body.theme-dark .tpl-card{background:rgba(255,255,255,.06);}
+body.theme-dark .tpl-card b{color:#f0e6d4;}
+body.theme-dark .tpl-card span{color:#c6d0e2;}
+#tlibBody{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;max-height:52vh;overflow:auto;}
+.tts-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;z-index:97;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;background:linear-gradient(145deg,#27507e,#16314f);border:1px solid var(--gold2);border-radius:14px;padding:9px 13px;box-shadow:0 10px 30px rgba(0,0,0,.45);color:#f0e6d4;font-size:13px;font-weight:700;}
+.tts-bar button{background:rgba(255,255,255,.12);border:1px solid rgba(200,165,100,.3);color:#f0e6d4;border-radius:9px;padding:5px 10px;font-size:12px;font-weight:700;cursor:pointer;}
+.tts-bar button.stop{background:rgba(197,80,58,.85);border-color:rgba(197,80,58,.9);color:#fff;}
+.tts-btn.on{background:rgba(197,80,58,.85)!important;color:#fff!important;border-color:rgba(197,80,58,.9)!important;}
 .tl-row{display:flex;gap:10px;align-items:flex-start;padding:9px 4px;border-bottom:1px solid var(--line);}
 .tl-row:last-child{border-bottom:none;}
 .tl-ic{flex:0 0 26px;height:26px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(200,165,100,.16);color:var(--gold2);}
@@ -433,7 +445,9 @@ img.shot{width:100%;max-height:300px;object-fit:cover;border-radius:10px;display
 .slideshow.show{display:flex;}
 .ss-top{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;}
 .ss-count{font-size:16px;font-weight:800;color:var(--gold);letter-spacing:1px;}
-.ss-x{background:rgba(120,95,40,.08);border:1px solid var(--line);color:var(--tx);padding:8px 14px;border-radius:9px;font-size:14px;}
+/* .slideshow 底色固定是深藍 #16263c，不能用亮色主題的 --tx／--line，否則深底配深字等於看不見。 */
+.ss-x{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.45);color:#fff;padding:9px 16px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;}
+.ss-x:hover{background:rgba(255,255,255,.26);border-color:#fff;}
 .ss-stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:auto;padding:6px 78px;position:relative;}
 #ssHolder{display:flex;align-items:center;justify-content:center;width:100%;height:100%;}
 #ssAnno{position:absolute;left:0;top:0;pointer-events:none;z-index:6;}
@@ -739,7 +753,8 @@ body.theme-dark .proj-item{background:rgba(255,255,255,.05);}
 .qz-tbl{width:100%;border-collapse:collapse;font-size:13px;}
 .qz-tbl th,.qz-tbl td{border-bottom:1px solid var(--line);padding:7px 5px;text-align:left;color:var(--tx);}
 .qz-tbl th{color:var(--mut);font-size:12px;}
-.qz-tbl td.num{text-align:right;font-variant-numeric:tabular-nums;}
+.qz-tbl td.num,.qz-tbl th.num{text-align:right;font-variant-numeric:tabular-nums;}
+.qz-tbl th:first-child,.qz-tbl td:first-child{white-space:nowrap;}
 .dm-peers{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;max-height:104px;overflow:auto;}
 .dm-peer{border:1px solid var(--line);background:rgba(120,95,40,.06);color:var(--tx);border-radius:11px;padding:6px 11px;font-size:13px;font-weight:700;position:relative;}
 .dm-peer.active{border-color:var(--gold);background:rgba(232,196,122,.18);color:var(--gold);}
@@ -1025,10 +1040,105 @@ body.has-assign.has-ann #room{height:calc(100dvh - var(--annH,36px) - 34px);marg
 body.has-assign.has-ann .assign-bar{top:var(--annH,36px);}
 .scr-diag{white-space:pre-wrap;word-break:break-all;font-size:11.5px;line-height:1.7;color:var(--tx);background:rgba(120,95,40,.08);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px;max-height:34vh;overflow:auto;}
 body.theme-dark .scr-diag{color:#f0e6d4;background:rgba(255,255,255,.06);}
+/* ===== B 級移植：即時字幕浮動視窗 ===== */
+.cap-win{position:fixed;right:18px;bottom:90px;z-index:330;width:min(560px,92vw);display:none;
+  background:var(--capbg,rgba(12,14,20,.8));border:1px solid rgba(200,165,100,.45);border-radius:16px;
+  box-shadow:0 16px 44px rgba(0,0,0,.5);overflow:hidden;backdrop-filter:blur(6px);}
+.cap-h{display:flex;align-items:center;gap:6px;padding:8px 10px;background:rgba(0,0,0,.35);color:#f0e6d4;font-size:13px;cursor:move;user-select:none;}
+.cap-h b{font-weight:800;}
+.cap-sp{flex:1;color:#ff8a8a;font-size:11.5px;font-weight:800;}
+.cap-b{background:rgba(255,255,255,.12);border:1px solid rgba(200,165,100,.3);color:#f0e6d4;border-radius:8px;padding:3px 8px;font-size:11.5px;font-weight:700;cursor:pointer;}
+.cap-body{max-height:min(38vh,320px);overflow:auto;padding:12px 14px;color:#fff;font-size:26px;line-height:1.55;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.6);}
+.cap-line{margin-bottom:10px;}
+.cap-line.cap-interim{opacity:.6;}
+.cap-t{display:inline-block;font-size:.5em;color:#c9b78d;margin-right:8px;vertical-align:middle;font-weight:600;}
+.cap-ctrl{display:block;padding:8px 10px;background:rgba(0,0,0,.28);}
+.cap-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:6px;}
+.cap-row:last-child{margin-bottom:0;}
+.cap-row label{color:#c9b78d;font-size:11.5px;font-weight:800;}
+.cap-row select{background:rgba(255,255,255,.12);border:1px solid rgba(200,165,100,.3);color:#f0e6d4;border-radius:8px;padding:4px 6px;font-size:12px;font-weight:700;}
+.cap-row select option{background:#1d2030;color:#f0e6d4;}
+.cap-go{flex:1 1 150px;background:linear-gradient(145deg,#c79a44,#8a5e1e);color:#fff;border:none;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:800;cursor:pointer;}
+.cap-go.on{background:linear-gradient(145deg,#c5503a,#8a2f22);}
+.cap-b2{background:rgba(255,255,255,.12);border:1px solid rgba(200,165,100,.3);color:#f0e6d4;border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700;cursor:pointer;}
+.cap-hint{color:#c9b78d;font-size:12px;font-weight:700;}
+/* ===== B 級移植：音檔轉字幕 ===== */
+.wh-player{width:100%;max-height:34vh;background:#000;border-radius:12px;display:block;margin:6px 0 10px;}
+.wh-audio{width:100%;margin:6px 0 10px;}
+.wh-list{max-height:34vh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:8px;background:rgba(120,95,40,.05);}
+.wh-seg{padding:7px 9px;border-radius:9px;font-size:14px;line-height:1.65;color:var(--tx);cursor:pointer;}
+.wh-seg:hover{background:rgba(232,196,122,.16);}
+.wh-seg.on{background:rgba(232,196,122,.3);font-weight:800;}
+.wh-t{display:inline-block;min-width:52px;color:var(--mut);font-size:11.5px;font-weight:700;font-variant-numeric:tabular-nums;}
+.wh-entry{background:rgba(120,180,255,.22)!important;border-color:rgba(140,190,255,.45)!important;}
+/* ===== B 級移植：OCR ===== */
+.ocr-text{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px;line-height:1.75;white-space:pre-wrap;margin-bottom:10px;}
+/* ===== AI 金鑰設定 ===== */
+.gq-chip{display:inline-block;margin:0 6px 4px 0;padding:2px 8px;border-radius:8px;background:rgba(120,95,40,.12);
+  border:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--tx);font-variant-numeric:tabular-nums;}
+.gq-chip.cool{background:rgba(197,80,58,.14);border-color:rgba(197,80,58,.4);color:#a33f2c;}
+/* ===== 課堂紀錄 ===== */
+.clog-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px;}
+.clog-tab{background:transparent;border:1px solid var(--line);color:var(--mut);border-radius:9px;
+  padding:7px 12px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;}
+.clog-tab:hover{background:rgba(120,95,40,.07);}
+.clog-tab.on{background:var(--gold);border-color:var(--gold);color:#fff;}
+.clog-tab i{font-style:normal;font-size:11px;font-weight:800;background:rgba(0,0,0,.16);
+  border-radius:99px;padding:1px 6px;font-variant-numeric:tabular-nums;}
+.clog-tab.on i{background:rgba(255,255,255,.28);}
+.clog-body{max-height:60vh;overflow:auto;}
+.clog-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+  margin-bottom:10px;font-size:13px;color:var(--mut);font-weight:700;}
+.clog-head b{color:var(--gold);font-size:15px;}
+.clog-dl{padding:6px 12px !important;font-size:12px !important;margin:0 !important;}
+.clog-tb{width:100%;border-collapse:collapse;font-size:13.5px;}
+.clog-tb th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);
+  color:var(--mut);font-size:12px;font-weight:800;white-space:nowrap;}
+.clog-tb td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle;}
+.clog-tb tr.no td{opacity:.62;}
+.clog-tb td.mono{font-variant-numeric:tabular-nums;color:var(--mut);font-size:12.5px;white-space:nowrap;}
+.clog-off{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:99px;font-size:11px;font-weight:700;
+  background:rgba(120,95,40,.12);color:var(--mut);}
+.clog-item{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:10px;
+  background:rgba(120,95,40,.035);}
+.clog-ts{font-size:11.5px;font-weight:700;color:var(--mut);font-variant-numeric:tabular-nums;}
+.clog-q{font-size:14.5px;font-weight:700;color:var(--tx);margin:5px 0 8px;line-height:1.5;}
+.clog-names{display:flex;flex-wrap:wrap;gap:6px;}
+.clog-names span{background:rgba(120,95,40,.1);border:1px solid var(--line);border-radius:8px;
+  padding:3px 9px;font-size:12.5px;color:var(--tx);}
+.clog-names span.first{background:rgba(232,196,122,.32);border-color:var(--gold);font-weight:800;}
+.clog-names span b{color:var(--gold);font-variant-numeric:tabular-nums;}
+.clog-ans{font-size:13.5px;line-height:1.6;padding:5px 0;border-top:1px dashed var(--line);}
+.clog-ans b{color:var(--gold);margin-right:8px;}
+.clog-bar{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:13px;}
+.clog-bar .lb{flex:0 0 34%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.clog-bar .br{flex:1;height:14px;background:rgba(120,95,40,.1);border-radius:99px;overflow:hidden;}
+.clog-bar .br i{display:block;height:100%;background:linear-gradient(90deg,#c79a44,#e8c47a);}
+.clog-bar .vn{flex:0 0 34px;text-align:right;font-weight:800;color:var(--gold);font-variant-numeric:tabular-nums;}
+.roster-gone .r-av.off{opacity:.5;background:var(--mut) !important;}
+@media(max-width:600px){.clog-tb th:nth-child(3),.clog-tb td:nth-child(3),
+  .clog-tb th:nth-child(5),.clog-tb td:nth-child(5){display:none;}}
+.bg-rk{display:inline-flex;align-items:center;gap:5px;margin:3px 5px 0 0;padding:3px 10px 3px 3px;border-radius:99px;background:rgba(255,255,255,.12);border:1px solid rgba(200,165,100,.4);font-size:13px;font-weight:700;color:inherit;}
+.bg-rk i{font-style:normal;min-width:20px;height:20px;line-height:20px;text-align:center;border-radius:99px;background:var(--gold,#c79a44);color:#fff;font-size:11.5px;font-weight:800;}
+.bg-rk:first-of-type i{background:linear-gradient(145deg,#e8c47a,#c79a44);}
+.bg-rk-t{display:block;font-size:11.5px;font-weight:800;opacity:.75;margin-bottom:4px;}
+.app-ver{margin-top:6px;font-size:12px;font-weight:700;color:var(--mut);opacity:.8;font-variant-numeric:tabular-nums;letter-spacing:.02em;}
+.ver-line{flex:1 1 100%;margin-top:10px;padding-top:10px;border-top:1px solid var(--line);font-size:11.5px;font-weight:700;color:var(--mut);opacity:.75;text-align:center;}
+/* ===== 貼文送達確認 ===== */
+.send-st{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:-2px 0 8px;padding:5px 9px;border-radius:9px;font-size:11.5px;font-weight:700;line-height:1.5;}
+.send-st.pend{background:rgba(120,95,40,.1);color:var(--mut);}
+.send-st.ok{background:rgba(92,150,90,.16);color:#3f7a3d;}
+.send-st.bad{background:rgba(197,80,58,.14);color:#a33f2c;border:1px solid rgba(197,80,58,.35);}
+.send-st.bad b{background:#c5503a;color:#fff;border-radius:6px;padding:1px 7px;font-size:11px;}
+.send-re{background:#c5503a;color:#fff;border:none;border-radius:7px;padding:3px 10px;font-size:11.5px;font-weight:800;cursor:pointer;margin-left:auto;}
+.send-re:hover{filter:brightness(1.1);}
+.card.undeliver{outline:2px solid rgba(197,80,58,.4);outline-offset:-2px;}
+body.theme-dark .send-st.ok{color:#8fd08c;}
+body.theme-dark .send-st.bad{color:#ff9c86;}
 </style>
 </head>
 <body>
-<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><symbol id="ic-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /> <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol><symbol id="ic-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="ic-paintbrush" viewBox="0 0 24 24"><path d="m14.622 17.897-10.68-2.913" /> <path d="M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0z" /> <path d="M9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15" /></symbol><symbol id="ic-timer" viewBox="0 0 24 24"><line x1="10" x2="14" y1="2" y2="2" /> <line x1="12" x2="15" y1="14" y2="11" /> <circle cx="12" cy="14" r="8" /></symbol><symbol id="ic-hand" viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2" /> <path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2" /> <path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8" /> <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" /></symbol><symbol id="ic-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /> <path d="M12 17h.01" /></symbol><symbol id="ic-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4" /> <path d="M3.34 19a10 10 0 1 1 17.32 0" /></symbol><symbol id="ic-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol><symbol id="ic-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" /></symbol><symbol id="ic-sliders" viewBox="0 0 24 24"><path d="M10 5H3" /> <path d="M12 19H3" /> <path d="M14 3v4" /> <path d="M16 17v4" /> <path d="M21 12h-9" /> <path d="M21 19h-5" /> <path d="M21 5h-7" /> <path d="M8 10v4" /> <path d="M8 12H3" /></symbol><symbol id="ic-book" viewBox="0 0 24 24"><path d="M12 7v14" /> <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></symbol><symbol id="ic-settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="ic-columns" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /> <path d="M15 3v18" /></symbol><symbol id="ic-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0" /> <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></symbol><symbol id="ic-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" /> <path d="M13 5v2" /> <path d="M13 17v2" /> <path d="M13 11v2" /></symbol><symbol id="ic-dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol><symbol id="ic-share" viewBox="0 0 24 24"><path d="M13 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3" /> <path d="M8 21h8" /> <path d="M12 17v4" /> <path d="m17 8 5-5" /> <path d="M17 3h5v5" /></symbol><symbol id="ic-record" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="1" /></symbol><symbol id="ic-clipboard" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /> <path d="M12 11h4" /> <path d="M12 16h4" /> <path d="M8 11h.01" /> <path d="M8 16h.01" /></symbol><symbol id="ic-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol><symbol id="ic-presentation" viewBox="0 0 24 24"><path d="M2 3h20" /> <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" /> <path d="m7 21 5-5 5 5" /></symbol><symbol id="ic-teacher" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /> <path d="M22 10v6" /> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></symbol><symbol id="ic-download" viewBox="0 0 24 24"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></symbol><symbol id="ic-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol><symbol id="ic-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <path d="M16 3.128a4 4 0 0 1 0 7.744" /> <path d="M22 21v-2a4 4 0 0 0-3-3.87" /> <circle cx="9" cy="7" r="4" /></symbol><symbol id="ic-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="ic-logout" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="ic-upload" viewBox="0 0 24 24"><path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></symbol><symbol id="ic-restore" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /></symbol><symbol id="ic-plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="ic-login" viewBox="0 0 24 24"><path d="m10 17 5-5-5-5" /> <path d="M15 12H3" /> <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /></symbol><symbol id="ic-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></symbol><symbol id="ic-camera" viewBox="0 0 24 24"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" /> <circle cx="12" cy="13" r="3" /></symbol><symbol id="ic-mic" viewBox="0 0 24 24"><path d="M12 19v3" /> <path d="M19 10v2a7 7 0 0 1-14 0v-2" /> <rect x="9" y="2" width="6" height="13" rx="3" /></symbol><symbol id="ic-micvocal" viewBox="0 0 24 24"><path d="m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12" /> <path d="M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5" /> <circle cx="16" cy="7" r="5" /></symbol><symbol id="ic-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /> <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /> <path d="M7 3v4a1 1 0 0 0 1 1h7" /></symbol><symbol id="ic-type" viewBox="0 0 24 24"><path d="M12 4v16" /> <path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2" /> <path d="M9 20h6" /></symbol><symbol id="ic-eraser" viewBox="0 0 24 24"><path d="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21" /> <path d="m5.082 11.09 8.828 8.828" /></symbol><symbol id="ic-trash" viewBox="0 0 24 24"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol><symbol id="ic-vote" viewBox="0 0 24 24"><path d="m9 12 2 2 4-4" /> <path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z" /> <path d="M22 19H2" /></symbol><symbol id="ic-package" viewBox="0 0 24 24"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <polyline points="3.29 7 12 12 20.71 7" /> <path d="m7.5 4.27 9 5.15" /></symbol><symbol id="ic-filetext" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol><symbol id="ic-printer" viewBox="0 0 24 24"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /> <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /> <rect x="6" y="14" width="12" height="8" rx="1" /></symbol><symbol id="ic-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" /></symbol><symbol id="ic-megaphone" viewBox="0 0 24 24"><path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" /> <path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14" /> <path d="M8 6v8" /></symbol><symbol id="ic-snowflake" viewBox="0 0 24 24"><path d="m10 20-1.25-2.5L6 18" /> <path d="M10 4 8.75 6.5 6 6" /> <path d="m14 20 1.25-2.5L18 18" /> <path d="m14 4 1.25 2.5L18 6" /> <path d="m17 21-3-6h-4" /> <path d="m17 3-3 6 1.5 3" /> <path d="M2 12h6.5L10 9" /> <path d="m20 10-1.5 2 1.5 2" /> <path d="M22 12h-6.5L14 15" /> <path d="m4 10 1.5 2L4 14" /> <path d="m7 21 3-6-1.5-3" /> <path d="m7 3 3 6h4" /></symbol><symbol id="ic-receipt" viewBox="0 0 24 24"><path d="M12 17V7" /> <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" /></symbol><symbol id="ic-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="ic-switchcam" viewBox="0 0 24 24"><path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" /> <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" /> <circle cx="12" cy="12" r="3" /> <path d="m18 22-3-3 3-3" /> <path d="m6 2 3 3-3 3" /></symbol><symbol id="ic-flashlight" viewBox="0 0 24 24"><path d="M12 13v1" /> <path d="M17 2a1 1 0 0 1 1 1v4a3 3 0 0 1-.6 1.8l-.6.8A4 4 0 0 0 16 12v8a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-8a4 4 0 0 0-.8-2.4l-.6-.8A3 3 0 0 1 6 7V3a1 1 0 0 1 1-1z" /> <path d="M6 6h12" /></symbol><symbol id="ic-cast" viewBox="0 0 24 24"><path d="M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6" /> <path d="M2 12a9 9 0 0 1 8 8" /> <path d="M2 16a5 5 0 0 1 4 4" /> <line x1="2" x2="2.01" y1="20" y2="20" /></symbol><symbol id="ic-thumbsup" viewBox="0 0 24 24"><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" /> <path d="M7 10v12" /></symbol><symbol id="ic-pin" viewBox="0 0 24 24"><path d="M12 17v5" /> <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" /></symbol><symbol id="ic-film" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M7 3v18" /> <path d="M3 7.5h4" /> <path d="M3 12h18" /> <path d="M3 16.5h4" /> <path d="M17 3v18" /> <path d="M17 7.5h4" /> <path d="M17 16.5h4" /></symbol><symbol id="ic-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13" /> <circle cx="6" cy="18" r="3" /> <circle cx="18" cy="16" r="3" /></symbol><symbol id="ic-message" viewBox="0 0 24 24"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /></symbol><symbol id="ic-hash" viewBox="0 0 24 24"><line x1="4" x2="20" y1="9" y2="9" /> <line x1="4" x2="20" y1="15" y2="15" /> <line x1="10" x2="8" y1="3" y2="21" /> <line x1="16" x2="14" y1="3" y2="21" /></symbol><symbol id="ic-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6" /> <path d="m8 6-6 6 6 6" /></symbol><symbol id="ic-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /> <path d="M12 7v5l4 2" /></symbol><symbol id="ic-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" /></symbol><symbol id="ic-graduation" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /> <path d="M22 10v6" /> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></symbol><symbol id="ic-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2" /> <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></symbol><symbol id="ic-bot" viewBox="0 0 24 24"><path d="M12 8V4H8" /> <rect width="16" height="12" x="4" y="8" rx="2" /> <path d="M2 14h2" /> <path d="M20 14h2" /> <path d="M15 13v2" /> <path d="M9 13v2" /></symbol><symbol id="ic-trophy" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /> <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /> <path d="M4 22h16" /> <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /> <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /> <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></symbol><symbol id="ic-move" viewBox="0 0 24 24"><path d="M12 2v20" /> <path d="m15 19-3 3-3-3" /> <path d="m19 9 3 3-3 3" /> <path d="M2 12h20" /> <path d="m5 9-3 3 3 3" /> <path d="m9 5 3-3 3 3" /></symbol><symbol id="ic-note" viewBox="0 0 24 24"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11l5-5V5a2 2 0 0 0-2-2z" /> <path d="M15 21v-4a2 2 0 0 1 2-2h4" /></symbol><symbol id="ic-shapes" viewBox="0 0 24 24"><path d="M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z" /> <rect x="3" y="14" width="7" height="7" rx="1" /> <circle cx="17.5" cy="17.5" r="3.5" /></symbol><symbol id="ic-undo" viewBox="0 0 24 24"><path d="M3 7v6h6" /> <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" /></symbol><symbol id="ic-redo" viewBox="0 0 24 24"><path d="M21 7v6h-6" /> <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7" /></symbol><symbol id="ic-align" viewBox="0 0 24 24"><path d="M12 2v20" /> <path d="M4 7h16" /> <path d="M4 17h16" /></symbol><symbol id="ic-grid" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M3 9h18" /> <path d="M3 15h18" /> <path d="M9 3v18" /> <path d="M15 3v18" /></symbol><symbol id="ic-stamp" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77" /> <path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 2 1 2 1 3.5V13" /></symbol><symbol id="ic-zoomout" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /> <path d="M8 11h6" /></symbol><symbol id="ic-zoomin" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /> <path d="M11 8v6" /> <path d="M8 11h6" /></symbol><symbol id="ic-maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3" /> <path d="M21 8V5a2 2 0 0 0-2-2h-3" /> <path d="M3 16v3a2 2 0 0 0 2 2h3" /> <path d="M16 21h3a2 2 0 0 0 2-2v-3" /></symbol><symbol id="ic-crosshair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <line x1="22" x2="18" y1="12" y2="12" /> <line x1="6" x2="2" y1="12" y2="12" /> <line x1="12" x2="12" y1="6" y2="2" /> <line x1="12" x2="12" y1="22" y2="18" /></symbol><symbol id="ic-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /> <path d="M21 3v5h-5" /> <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /> <path d="M8 16H3v5" /></symbol><symbol id="ic-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /> <path d="M15 5.764v15" /> <path d="M9 3.236v15" /></symbol><symbol id="ic-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1" /> <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /> <path d="M10 12h4" /></symbol><symbol id="ic-scroll" viewBox="0 0 24 24"><path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="ic-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></symbol><symbol id="ic-brain" viewBox="0 0 24 24"><path d="M12 18V5" /> <path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4" /> <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5" /> <path d="M17.997 5.125a4 4 0 0 1 2.526 5.77" /> <path d="M18 18a4 4 0 0 0 2-7.464" /> <path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517" /> <path d="M6 18a4 4 0 0 1-2-7.464" /> <path d="M6.003 5.125a4 4 0 0 0-2.526 5.77" /></symbol><symbol id="ic-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol><symbol id="ic-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="ic-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" /> <path d="M12 9v4l2 2" /> <path d="M5 3 2 6" /> <path d="m22 6-3-3" /> <path d="M6.38 18.7 4 21" /> <path d="M17.64 18.67 20 21" /></symbol><symbol id="ic-folderopen" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" /></symbol><symbol id="ic-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" /></symbol><symbol id="ic-palette" viewBox="0 0 24 24"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /> <circle cx="13.5" cy="6.5" r=".5" /> <circle cx="17.5" cy="10.5" r=".5" /> <circle cx="6.5" cy="12.5" r=".5" /> <circle cx="8.5" cy="7.5" r=".5" /></symbol><symbol id="ic-tv" viewBox="0 0 24 24"><path d="m17 2-5 5-5-5" /> <rect width="20" height="15" x="2" y="7" rx="2" /></symbol><symbol id="ic-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></symbol><symbol id="ic-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol></svg>
+<svg xmlns="http://www.w3.org/2000/svg" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><symbol id="ic-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /> <path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /></symbol><symbol id="ic-pencil" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /></symbol><symbol id="ic-paintbrush" viewBox="0 0 24 24"><path d="m14.622 17.897-10.68-2.913" /> <path d="M18.376 2.622a1 1 0 1 1 3.002 3.002L17.36 9.643a.5.5 0 0 0 0 .707l.944.944a2.41 2.41 0 0 1 0 3.408l-.944.944a.5.5 0 0 1-.707 0L8.354 7.348a.5.5 0 0 1 0-.707l.944-.944a2.41 2.41 0 0 1 3.408 0l.944.944a.5.5 0 0 0 .707 0z" /> <path d="M9 8c-1.804 2.71-3.97 3.46-6.583 3.948a.507.507 0 0 0-.302.819l7.32 8.883a1 1 0 0 0 1.185.204C12.735 20.405 16 16.792 16 15" /></symbol><symbol id="ic-timer" viewBox="0 0 24 24"><line x1="10" x2="14" y1="2" y2="2" /> <line x1="12" x2="15" y1="14" y2="11" /> <circle cx="12" cy="14" r="8" /></symbol><symbol id="ic-hand" viewBox="0 0 24 24"><path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2" /> <path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2" /> <path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8" /> <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" /></symbol><symbol id="ic-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /> <path d="M12 17h.01" /></symbol><symbol id="ic-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4" /> <path d="M3.34 19a10 10 0 1 1 17.32 0" /></symbol><symbol id="ic-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol><symbol id="ic-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16" /> <path d="M18 17V9" /> <path d="M13 17V5" /> <path d="M8 17v-3" /></symbol><symbol id="ic-sliders" viewBox="0 0 24 24"><path d="M10 5H3" /> <path d="M12 19H3" /> <path d="M14 3v4" /> <path d="M16 17v4" /> <path d="M21 12h-9" /> <path d="M21 19h-5" /> <path d="M21 5h-7" /> <path d="M8 10v4" /> <path d="M8 12H3" /></symbol><symbol id="ic-book" viewBox="0 0 24 24"><path d="M12 7v14" /> <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" /></symbol><symbol id="ic-settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="ic-columns" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /> <path d="M15 3v18" /></symbol><symbol id="ic-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0" /> <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></symbol><symbol id="ic-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" /> <path d="M13 5v2" /> <path d="M13 17v2" /> <path d="M13 11v2" /></symbol><symbol id="ic-dices" viewBox="0 0 24 24"><rect width="12" height="12" x="2" y="10" rx="2" ry="2" /> <path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6" /> <path d="M6 18h.01" /> <path d="M10 14h.01" /> <path d="M15 6h.01" /> <path d="M18 9h.01" /></symbol><symbol id="ic-share" viewBox="0 0 24 24"><path d="M13 3H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-3" /> <path d="M8 21h8" /> <path d="M12 17v4" /> <path d="m17 8 5-5" /> <path d="M17 3h5v5" /></symbol><symbol id="ic-record" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="1" /></symbol><symbol id="ic-clipboard" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1" /> <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" /> <path d="M12 11h4" /> <path d="M12 16h4" /> <path d="M8 11h.01" /> <path d="M8 16h.01" /></symbol><symbol id="ic-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z" /></symbol><symbol id="ic-presentation" viewBox="0 0 24 24"><path d="M2 3h20" /> <path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" /> <path d="m7 21 5-5 5 5" /></symbol><symbol id="ic-teacher" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /> <path d="M22 10v6" /> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></symbol><symbol id="ic-download" viewBox="0 0 24 24"><path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /></symbol><symbol id="ic-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /></symbol><symbol id="ic-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /> <path d="M16 3.128a4 4 0 0 1 0 7.744" /> <path d="M22 21v-2a4 4 0 0 0-3-3.87" /> <circle cx="9" cy="7" r="4" /></symbol><symbol id="ic-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="ic-logout" viewBox="0 0 24 24"><path d="m16 17 5-5-5-5" /> <path d="M21 12H9" /> <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /></symbol><symbol id="ic-upload" viewBox="0 0 24 24"><path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /></symbol><symbol id="ic-restore" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /></symbol><symbol id="ic-plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="ic-login" viewBox="0 0 24 24"><path d="m10 17 5-5-5-5" /> <path d="M15 12H3" /> <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /></symbol><symbol id="ic-paperclip" viewBox="0 0 24 24"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551" /></symbol><symbol id="ic-camera" viewBox="0 0 24 24"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z" /> <circle cx="12" cy="13" r="3" /></symbol><symbol id="ic-mic" viewBox="0 0 24 24"><path d="M12 19v3" /> <path d="M19 10v2a7 7 0 0 1-14 0v-2" /> <rect x="9" y="2" width="6" height="13" rx="3" /></symbol><symbol id="ic-micvocal" viewBox="0 0 24 24"><path d="m11 7.601-5.994 8.19a1 1 0 0 0 .1 1.298l.817.818a1 1 0 0 0 1.314.087L15.09 12" /> <path d="M16.5 21.174C15.5 20.5 14.372 20 13 20c-2.058 0-3.928 2.356-6 2-2.072-.356-2.775-3.369-1.5-4.5" /> <circle cx="16" cy="7" r="5" /></symbol><symbol id="ic-save" viewBox="0 0 24 24"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" /> <path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7" /> <path d="M7 3v4a1 1 0 0 0 1 1h7" /></symbol><symbol id="ic-type" viewBox="0 0 24 24"><path d="M12 4v16" /> <path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2" /> <path d="M9 20h6" /></symbol><symbol id="ic-eraser" viewBox="0 0 24 24"><path d="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21" /> <path d="m5.082 11.09 8.828 8.828" /></symbol><symbol id="ic-trash" viewBox="0 0 24 24"><path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></symbol><symbol id="ic-vote" viewBox="0 0 24 24"><path d="m9 12 2 2 4-4" /> <path d="M5 7c0-1.1.9-2 2-2h10a2 2 0 0 1 2 2v12H5V7Z" /> <path d="M22 19H2" /></symbol><symbol id="ic-package" viewBox="0 0 24 24"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <polyline points="3.29 7 12 12 20.71 7" /> <path d="m7.5 4.27 9 5.15" /></symbol><symbol id="ic-filetext" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol><symbol id="ic-printer" viewBox="0 0 24 24"><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /> <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /> <rect x="6" y="14" width="12" height="8" rx="1" /></symbol><symbol id="ic-cloud" viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" /></symbol><symbol id="ic-megaphone" viewBox="0 0 24 24"><path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" /> <path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14" /> <path d="M8 6v8" /></symbol><symbol id="ic-snowflake" viewBox="0 0 24 24"><path d="m10 20-1.25-2.5L6 18" /> <path d="M10 4 8.75 6.5 6 6" /> <path d="m14 20 1.25-2.5L18 18" /> <path d="m14 4 1.25 2.5L18 6" /> <path d="m17 21-3-6h-4" /> <path d="m17 3-3 6 1.5 3" /> <path d="M2 12h6.5L10 9" /> <path d="m20 10-1.5 2 1.5 2" /> <path d="M22 12h-6.5L14 15" /> <path d="m4 10 1.5 2L4 14" /> <path d="m7 21 3-6-1.5-3" /> <path d="m7 3 3 6h4" /></symbol><symbol id="ic-receipt" viewBox="0 0 24 24"><path d="M12 17V7" /> <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" /></symbol><symbol id="ic-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /> <path d="M7 11V7a5 5 0 0 1 10 0v4" /></symbol><symbol id="ic-switchcam" viewBox="0 0 24 24"><path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h5" /> <path d="M13 5h7a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h-5" /> <circle cx="12" cy="12" r="3" /> <path d="m18 22-3-3 3-3" /> <path d="m6 2 3 3-3 3" /></symbol><symbol id="ic-flashlight" viewBox="0 0 24 24"><path d="M12 13v1" /> <path d="M17 2a1 1 0 0 1 1 1v4a3 3 0 0 1-.6 1.8l-.6.8A4 4 0 0 0 16 12v8a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2v-8a4 4 0 0 0-.8-2.4l-.6-.8A3 3 0 0 1 6 7V3a1 1 0 0 1 1-1z" /> <path d="M6 6h12" /></symbol><symbol id="ic-cast" viewBox="0 0 24 24"><path d="M2 8V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-6" /> <path d="M2 12a9 9 0 0 1 8 8" /> <path d="M2 16a5 5 0 0 1 4 4" /> <line x1="2" x2="2.01" y1="20" y2="20" /></symbol><symbol id="ic-thumbsup" viewBox="0 0 24 24"><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z" /> <path d="M7 10v12" /></symbol><symbol id="ic-pin" viewBox="0 0 24 24"><path d="M12 17v5" /> <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" /></symbol><symbol id="ic-film" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M7 3v18" /> <path d="M3 7.5h4" /> <path d="M3 12h18" /> <path d="M3 16.5h4" /> <path d="M17 3v18" /> <path d="M17 7.5h4" /> <path d="M17 16.5h4" /></symbol><symbol id="ic-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13" /> <circle cx="6" cy="18" r="3" /> <circle cx="18" cy="16" r="3" /></symbol><symbol id="ic-message" viewBox="0 0 24 24"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /></symbol><symbol id="ic-hash" viewBox="0 0 24 24"><line x1="4" x2="20" y1="9" y2="9" /> <line x1="4" x2="20" y1="15" y2="15" /> <line x1="10" x2="8" y1="3" y2="21" /> <line x1="16" x2="14" y1="3" y2="21" /></symbol><symbol id="ic-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6" /> <path d="m8 6-6 6 6 6" /></symbol><symbol id="ic-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /> <path d="M12 7v5l4 2" /></symbol><symbol id="ic-star" viewBox="0 0 24 24"><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" /></symbol><symbol id="ic-graduation" viewBox="0 0 24 24"><path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z" /> <path d="M22 10v6" /> <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5" /></symbol><symbol id="ic-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2" /> <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" /></symbol><symbol id="ic-bot" viewBox="0 0 24 24"><path d="M12 8V4H8" /> <rect width="16" height="12" x="4" y="8" rx="2" /> <path d="M2 14h2" /> <path d="M20 14h2" /> <path d="M15 13v2" /> <path d="M9 13v2" /></symbol><symbol id="ic-trophy" viewBox="0 0 24 24"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" /> <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" /> <path d="M4 22h16" /> <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" /> <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" /> <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" /></symbol><symbol id="ic-move" viewBox="0 0 24 24"><path d="M12 2v20" /> <path d="m15 19-3 3-3-3" /> <path d="m19 9 3 3-3 3" /> <path d="M2 12h20" /> <path d="m5 9-3 3 3 3" /> <path d="m9 5 3-3 3 3" /></symbol><symbol id="ic-note" viewBox="0 0 24 24"><path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11l5-5V5a2 2 0 0 0-2-2z" /> <path d="M15 21v-4a2 2 0 0 1 2-2h4" /></symbol><symbol id="ic-shapes" viewBox="0 0 24 24"><path d="M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z" /> <rect x="3" y="14" width="7" height="7" rx="1" /> <circle cx="17.5" cy="17.5" r="3.5" /></symbol><symbol id="ic-undo" viewBox="0 0 24 24"><path d="M3 7v6h6" /> <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" /></symbol><symbol id="ic-redo" viewBox="0 0 24 24"><path d="M21 7v6h-6" /> <path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7" /></symbol><symbol id="ic-align" viewBox="0 0 24 24"><path d="M12 2v20" /> <path d="M4 7h16" /> <path d="M4 17h16" /></symbol><symbol id="ic-grid" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M3 9h18" /> <path d="M3 15h18" /> <path d="M9 3v18" /> <path d="M15 3v18" /></symbol><symbol id="ic-stamp" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77" /> <path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 2 1 2 1 3.5V13" /></symbol><symbol id="ic-zoomout" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /> <path d="M8 11h6" /></symbol><symbol id="ic-zoomin" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /> <path d="M11 8v6" /> <path d="M8 11h6" /></symbol><symbol id="ic-maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3" /> <path d="M21 8V5a2 2 0 0 0-2-2h-3" /> <path d="M3 16v3a2 2 0 0 0 2 2h3" /> <path d="M16 21h3a2 2 0 0 0 2-2v-3" /></symbol><symbol id="ic-crosshair" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <line x1="22" x2="18" y1="12" y2="12" /> <line x1="6" x2="2" y1="12" y2="12" /> <line x1="12" x2="12" y1="6" y2="2" /> <line x1="12" x2="12" y1="22" y2="18" /></symbol><symbol id="ic-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /> <path d="M21 3v5h-5" /> <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /> <path d="M8 16H3v5" /></symbol><symbol id="ic-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /> <path d="M15 5.764v15" /> <path d="M9 3.236v15" /></symbol><symbol id="ic-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1" /> <path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" /> <path d="M10 12h4" /></symbol><symbol id="ic-scroll" viewBox="0 0 24 24"><path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="ic-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></symbol><symbol id="ic-brain" viewBox="0 0 24 24"><path d="M12 18V5" /> <path d="M15 13a4.17 4.17 0 0 1-3-4 4.17 4.17 0 0 1-3 4" /> <path d="M17.598 6.5A3 3 0 1 0 12 5a3 3 0 1 0-5.598 1.5" /> <path d="M17.997 5.125a4 4 0 0 1 2.526 5.77" /> <path d="M18 18a4 4 0 0 0 2-7.464" /> <path d="M19.967 17.483A4 4 0 1 1 12 18a4 4 0 1 1-7.967-.517" /> <path d="M6 18a4 4 0 0 1-2-7.464" /> <path d="M6.003 5.125a4 4 0 0 0-2.526 5.77" /></symbol><symbol id="ic-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol><symbol id="ic-sparkles" viewBox="0 0 24 24"><path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /></symbol><symbol id="ic-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8" /> <path d="M12 9v4l2 2" /> <path d="M5 3 2 6" /> <path d="m22 6-3-3" /> <path d="M6.38 18.7 4 21" /> <path d="M17.64 18.67 20 21" /></symbol><symbol id="ic-folderopen" viewBox="0 0 24 24"><path d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2" /></symbol><symbol id="ic-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z" /></symbol><symbol id="ic-palette" viewBox="0 0 24 24"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /> <circle cx="13.5" cy="6.5" r=".5" /> <circle cx="17.5" cy="10.5" r=".5" /> <circle cx="6.5" cy="12.5" r=".5" /> <circle cx="8.5" cy="7.5" r=".5" /></symbol><symbol id="ic-tv" viewBox="0 0 24 24"><path d="m17 2-5 5-5-5" /> <rect width="20" height="15" x="2" y="7" rx="2" /></symbol><symbol id="ic-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" /></symbol><symbol id="ic-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2" /> <line x1="8" x2="16" y1="21" y2="21" /> <line x1="12" x2="12" y1="17" y2="21" /></symbol><symbol id="ic-volume" viewBox="0 0 24 24"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" /> <path d="M16 9a5 5 0 0 1 0 6" /> <path d="M19.364 18.364a9 9 0 0 0 0-12.728" /></symbol><symbol id="ic-stop" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2" /></symbol></svg>
 
 <!-- ===================== LOBBY ===================== -->
 <div id="lobby">
@@ -1708,6 +1818,17 @@ body.theme-dark .scr-diag{color:#f0e6d4;background:rgba(255,255,255,.06);}
   </div>
 </div>
 
+<!-- ===== v7.5 移植：白板版型模板庫 ===== -->
+<div class="cmodal" id="tlibModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="cm-card cm-xwide">
+    <div class="cm-h"><svg class="ic" fill="none"><use href="#ic-grid"/></svg> 版型模板庫<button class="cm-x" onclick="$('tlibModal').classList.remove('show')">✕</button></div>
+    <div class="ms-hint" style="margin-bottom:8px">一鍵在畫布上鋪出版型。所有方框都是便利貼物件，可直接雙擊改字、拖曳、換色、縮放，並即時同步全班。</div>
+    <div class="qz-lab">主題名稱（會填入版型中央／標題，可留白）</div>
+    <input id="tlibTitle" class="qz-fld" maxlength="30" placeholder="例如：本季行銷策略">
+    <div id="tlibBody" style="margin-top:10px"></div>
+  </div>
+</div>
+
 <!-- ===== 課堂動態時間軸 ===== -->
 <div class="cmodal" id="tlModal" onclick="if(event.target===this)this.classList.remove('show')">
   <div class="cm-card cm-xwide">
@@ -1890,6 +2011,95 @@ body.theme-dark .scr-diag{color:#f0e6d4;background:rgba(255,255,255,.06);}
     <div class="kb-hint">欄位名稱（每行一個，最多 8 欄）：</div>
     <textarea id="kbCols" class="kb-cols" rows="5" placeholder="第一組&#10;第二組&#10;第三組"></textarea>
     <button class="btn btn-gold" onclick="applyKanbanFromUI()">套用</button>
+  </div>
+</div>
+
+<!-- ===== B 級移植：音檔轉字幕（Groq Whisper） ===== -->
+<div class="cmodal" id="whModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="cm-card cm-xwide">
+    <div class="cm-h"><svg class="ic" fill="none"><use href="#ic-music"/></svg> 音檔轉字幕<button class="cm-x" onclick="$('whModal').classList.remove('show')">✕</button></div>
+    <div class="ms-hint" style="margin-bottom:10px">用 Groq Whisper 轉錄音檔或影片。<b>不經過麥克風</b>，所以播放教材、手機錄音、線上影片音軌都能準確辨識。單檔上限 25 MB。</div>
+    <div class="qz-lab">Groq API Key（與 AI 出題共用，存在本機）</div>
+    <input id="whKey" class="qz-fld" type="password" placeholder="gsk_..." autocomplete="off">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn btn-ghost" style="flex:1 1 200px" onclick="$('whFileIn').click()"><svg class="ic" fill="none"><use href="#ic-folderopen"/></svg> 選擇音檔／影片</button>
+      <input type="file" id="whFileIn" style="display:none" accept="audio/*,video/*,.mp3,.m4a,.wav,.webm,.mp4,.ogg,.flac" onchange="whPick(event)">
+    </div>
+    <div class="ms-hint" id="whInfo" style="display:none"></div>
+    <div class="qz-row">
+      <div><div class="qz-lab">模型</div><select id="whModel" class="qz-fld"></select></div>
+      <div><div class="qz-lab">語言</div><select id="whLang" class="qz-fld"></select></div>
+    </div>
+    <label class="scr-op"><input type="checkbox" id="whTC" checked> 中文一律輸出<b>繁體中文（台灣用語）</b></label>
+    <label class="scr-op"><input type="checkbox" id="whToEn"> 直接翻成英文（Whisper 內建翻譯，會忽略上方語言設定）</label>
+    <button class="btn btn-gold" id="whRunBtn" onclick="whRun()"><svg class="ic" fill="none"><use href="#ic-micvocal"/></svg> 開始轉錄</button>
+    <div id="whResult" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- ===== B 級移植：OCR 文字辨識（Tesseract 本機辨識） ===== -->
+<div class="cmodal" id="ocrModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="cm-card cm-xwide">
+    <div class="cm-h"><svg class="ic" fill="none"><use href="#ic-search"/></svg> OCR 文字辨識<button class="cm-x" onclick="$('ocrModal').classList.remove('show')">✕</button></div>
+    <div class="ms-hint" style="margin-bottom:10px">把<b>圖片、拍照的板書、掃描版 PDF</b>轉成可編輯文字。全程在瀏覽器內辨識，<b>不需金鑰、不上傳雲端</b>；首次使用會下載一次語言檔（約 15 MB，之後快取）。辨識完可直接修正，再貼到牆上、加到畫布或送進 AI。</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="btn btn-ghost" style="flex:1 1 220px" onclick="$('ocrFileIn').click()"><svg class="ic" fill="none"><use href="#ic-folderopen"/></svg> 選擇圖片或 PDF</button>
+      <input type="file" id="ocrFileIn" style="display:none" accept="image/*,application/pdf,.pdf" onchange="ocrPick(event)">
+    </div>
+    <div class="ms-hint" id="ocrInfo" style="display:none"></div>
+    <input type="hidden" id="ocrEngine" value="tess">
+    <div class="qz-lab">辨識語言</div>
+    <select id="ocrLang" class="qz-fld"></select>
+    <div class="qz-row" id="ocrPageRow" style="display:none">
+      <div><div class="qz-lab">起始頁</div><input id="ocrFrom" class="qz-fld" type="number" min="1" value="1"></div>
+      <div><div class="qz-lab">結束頁（0＝到最後）</div><input id="ocrTo" class="qz-fld" type="number" min="0" value="0"></div>
+    </div>
+    <label class="scr-op"><input type="checkbox" id="ocrKeep" checked> 保留原本的段落與換行結構</label>
+    <button class="btn btn-gold" id="ocrRunBtn" onclick="ocrRun()"><svg class="ic" fill="none"><use href="#ic-search"/></svg> 開始辨識</button>
+    <div id="ocrOut" style="margin-top:12px"></div>
+  </div>
+</div>
+
+<!-- ===== AI 金鑰設定 ===== -->
+<div class="cmodal" id="keyModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="cm-card cm-xwide">
+    <div class="cm-h"><svg class="ic" fill="none"><use href="#ic-settings"/></svg> AI 金鑰設定<button class="cm-x" onclick="$('keyModal').classList.remove('show')">✕</button></div>
+    <div class="ms-hint" style="margin-bottom:10px">
+      AI 課堂摘要、AI 出題、AI 助教、提問自動分群、音檔轉字幕、OCR 視覺辨識，都用同一把 <b>Groq API Key</b>。
+      到 <b>console.groq.com/keys</b> 申請，免費層即可使用。
+    </div>
+    <div class="ms-hint" style="margin-bottom:10px">
+      可以填最多三把。Groq 的免費用量是<b>每把金鑰各自計算</b>，一堂課同時跑摘要、出題與轉字幕很容易撞到上限；
+      填多把之後，撞到上限會自動換下一把接著跑。
+    </div>
+    <div class="qz-lab">金鑰 1（主要）</div>
+    <input id="gqK0" class="qz-fld" type="password" placeholder="gsk_..." autocomplete="off">
+    <div class="qz-lab">金鑰 2（備用，選填）</div>
+    <input id="gqK1" class="qz-fld" type="password" placeholder="gsk_..." autocomplete="off">
+    <div class="qz-lab">金鑰 3（備用，選填）</div>
+    <input id="gqK2" class="qz-fld" type="password" placeholder="gsk_..." autocomplete="off">
+    <div class="qz-lab">文字模型</div>
+    <select id="gqModel" class="qz-fld"></select>
+    <div id="gqStatus" style="margin:8px 0"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-gold" style="flex:2 1 160px" onclick="saveKeyCfg()">儲存</button>
+      <button class="btn btn-ghost" style="flex:1 1 130px" onclick="testKeyCfg()">測試連線</button>
+      <button class="btn btn-ghost" style="flex:1 1 110px" onclick="clearKeyCfg()">清空</button>
+    </div>
+    <div id="gqTest" style="margin-top:10px"></div>
+    <div class="ms-hint" style="margin-top:12px;opacity:.85">
+      金鑰只存在<b>這台裝置的這個瀏覽器</b>（localStorage），不會寫進檔案、不會傳給學員，也不會跟著教室分享連結出去。
+      換裝置要重新填。學員完全不需要金鑰——所有 AI 呼叫都由房主這端代發。
+    </div>
+  </div>
+</div>
+
+<!-- ===== 課堂紀錄 ===== -->
+<div class="cmodal" id="clogModal" onclick="if(event.target===this)this.classList.remove('show')">
+  <div class="cm-card cm-xwide">
+    <div class="cm-h"><svg class="ic" fill="none"><use href="#ic-history"/></svg> 課堂紀錄<button class="cm-x" onclick="$('clogModal').classList.remove('show')">✕</button></div>
+    <div class="clog-nav" id="clogNav"></div>
+    <div class="clog-body" id="clogBody"></div>
   </div>
 </div>
 
@@ -2810,7 +3020,7 @@ function startRoll(){if(_rollSpinning)return;_rollNoRepeat=!!($('rollNoRepeat')&
   hostBroadcast({t:'rollstart',items:items,winner:winner,mode:_rollMode,dur:dur});
   playRoll(items,winner,_rollMode,dur);renderRollHost();}
 function playRoll(items,winner,mode,dur){if(!items||!items.length)return;_rollSpinning=true;
-  var stage=$('rollStage');$('rsLabel').textContent=(mode==='name'?'<svg class="ic" fill="none"><use href="#ic-hand"/></svg> 隨機點名':'<svg class="ic" fill="none"><use href="#ic-hash"/></svg> 抽座號');
+  var stage=$('rollStage');$('rsLabel').innerHTML=(mode==='name'?'<svg class="ic" fill="none"><use href="#ic-hand"/></svg> 隨機點名':'<svg class="ic" fill="none"><use href="#ic-hash"/></svg> 抽座號');
   $('rsResult').textContent='';$('rsClose').style.display='none';
   var win=document.querySelector('.rs-window');if(win)win.classList.remove('locked');
   var numEl=$('rsNum');numEl.classList.toggle('small',mode==='name');
@@ -2944,7 +3154,10 @@ function showBuzzGuest(){if(isHost)return;_myBuzzed=false;var bt=$('bgBtn');if(b
 function hideBuzzGuest(){$('buzzGuest').style.display='none';}
 function guestBuzzRank(list){buzzList=list||[];var idx=-1;for(var i=0;i<buzzList.length;i++)if(buzzList[i].uid===myId){idx=i;break;}
   if(idx>=0){$('bgResult').textContent='你是第 '+(idx+1)+' 位！'+(idx===0?' 🥇':idx===1?' 🥈':idx===2?' 🥉':'');var bt=$('bgBtn');if(bt)bt.disabled=true;_myBuzzed=true;}
-  var top=buzzList.slice(0,5).map(function(x,i){return (i+1)+'. '+x.name;}).join('　');$('bgRank').textContent=top?('目前順序：'+top):'';}
+  /* 原本是 (i+1)+'. '+name，學員叫「888」時會吐出「1. 888」，讀起來像小數 1.888。改成名次單獨一顆，名字分開。 */
+  var top=buzzList.slice(0,5).map(function(x,i){
+    return '<span class="bg-rk"><i>'+(i+1)+'</i>'+esc(x.name)+'</span>';}).join('');
+  $('bgRank').innerHTML=top?('<span class="bg-rk-t">目前順序</span>'+top):'';}
 /* ===================== 🎟️ 退場券 ===================== */
 var exitActive=null,_exitQ='';
 function openExit(){if(!isHost)return;renderExitHost();$('exitModal').classList.add('show');}
@@ -3840,7 +4053,8 @@ function applySelfPerms(){
   var ro=$('roTag');if(ro)ro.style.display=(vo&&!isHost)?'inline-block':'none';
   if(vo)closePost();
   var hb=$('handBtn');if(hb)hb.style.display=canIComment()?'inline-block':'none';
-  var db=$('dmBtn');if(db)db.style.display=(isHost||allowDM)?'inline-block':'none';
+  /* 學員永遠可以私訊老師（canDMto 已做逐人閘門），所以按鈕不能藏。原本 allowDM 預設 false 時整顆藏掉，老師傳來的私訊只跳一則提示，之後永遠點不開。 */
+  var db=$('dmBtn');if(db)db.style.display='inline-block';
   var qw=$('qaInWrap');if(qw)qw.style.display=canIAsk()?'':'none';
   updateCkTag();setDrawUI();renderFeed();}
 
@@ -4027,11 +4241,12 @@ function renderQuizStats(){var rs=quizRounds();
   var ids=Object.keys(quizStats);
   if(!ids.length){$('qzStatBody').innerHTML='<div class="poll-empty">還沒有任何答題紀錄</div>';$('qzStatSum').textContent='';return;}
   ids.sort(function(a,b){return quizStats[b].c-quizStats[a].c;});
-  var h='<table class="qz-tbl"><thead><tr><th>姓名</th><th class="num">作答</th><th class="num">答對</th><th class="num">正確率</th><th class="num">分數</th>';
+  /* 原本還有一欄「分數」，算式是 Math.round(c*100/t)——跟旁邊的「正確率」完全相同，兩欄永遠一樣。拿掉重複的那一欄。 */
+  var h='<table class="qz-tbl"><thead><tr><th>姓名</th><th class="num">作答</th><th class="num">答對</th><th class="num">正確率</th>';
   rs.forEach(function(r){h+='<th class="num">第'+r+'回</th>';});
   h+='</tr></thead><tbody>';
   ids.forEach(function(u){var s=quizStats[u];var pc=s.t?Math.round(s.c*100/s.t):0;
-    h+='<tr><td>'+esc(s.name)+'</td><td class="num">'+s.t+'</td><td class="num">'+s.c+'</td><td class="num">'+pc+'%</td><td class="num">'+(s.t?Math.round(s.c*100/s.t):0)+'</td>';
+    h+='<tr><td>'+esc(s.name)+'</td><td class="num">'+s.t+'</td><td class="num">'+s.c+'</td><td class="num">'+pc+'%</td>';
     rs.forEach(function(r){var rr=s.rounds[r];h+='<td class="num">'+(rr?(rr.c+'/'+rr.t):'—')+'</td>';});
     h+='</tr>';});
   h+='</tbody></table>';
@@ -4040,11 +4255,11 @@ function renderQuizStats(){var rs=quizRounds();
   $('qzStatSum').textContent=ids.length+' 人・共 '+rs.length+' 回合・全班正確率 '+(tt?Math.round(tc*100/tt):0)+'%';}
 function exportQuizCSV(){if(!isHost)return;
   function qq(s){s=String(s==null?'':s);return '"'+s.replace(/"/g,'""')+'"';}
-  var rs=quizRounds();var head=['姓名','作答題數','答對題數','正確率(%)','分數'];
+  var rs=quizRounds();var head=['姓名','作答題數','答對題數','正確率(%)'];
   rs.forEach(function(r){head.push('第'+r+'回合(對/題)');});
   var rows=[head];
   Object.keys(quizStats).forEach(function(u){var s=quizStats[u];var pc=s.t?Math.round(s.c*100/s.t):0;
-    var row=[qq(s.name),qq(s.t),qq(s.c),qq(pc),qq(pc)];
+    var row=[qq(s.name),qq(s.t),qq(s.c),qq(pc)];
     rs.forEach(function(r){var rr=s.rounds[r];row.push(qq(rr?(rr.c+'/'+rr.t):''));});
     rows.push(row);});
   var csv='\ufeff'+rows.map(function(r){return r.join(',');}).join('\r\n');
@@ -4080,7 +4295,7 @@ function dmBump(u,name){
   dmUnread[u]=(dmUnread[u]||0)+1;updateDmBadge();
   notice('✉️ '+(name||(members[u]&&members[u].name)||'有人')+' 傳來私訊');}
 function openDM(u){
-  if(!isHost&&!allowDM){toast('老師已關閉私訊功能');return;}
+  /* 不在這裡擋：學員永遠要能開來看老師的私訊。能不能傳給某人由 canDMto() 逐人判斷。 */
   var arr=memberArray().filter(function(m){return m.id!==myId;});
   if(!arr.length){toast('目前沒有其他成員');return;}
   dmPeer=(u&&members[u])?u:(dmPeer&&members[dmPeer]?dmPeer:arr[0].id);
@@ -4104,10 +4319,13 @@ function renderDM(){
     var mark=m.me?(m.sent===false?'<i style="color:#c5503a">・未送達</i>':(m.sent?'<i>・✓ 已送達</i>':'')):'';
     d.innerHTML=esc(m.text)+'<time>'+esc((m.me?'我':(m.name||''))+' · '+(m.ts||''))+mark+'</time>';th.appendChild(d);});
   th.scrollTop=th.scrollHeight;}
-function hostUidGuess(){for(var id in members){if(members[id].isHost)return id;}return '';}
+/* 優先用已同步的 hostId。members[id].isHost 只在房主本機的 setHostUI 裡設，早進教室的學員可能拿到還沒有該旗標的 members，那時這個函式會回空字串，「學員永遠可私訊老師」就失效。 */
+function hostUidGuess(){
+  if(hostId&&members[hostId])return hostId;
+  for(var id in members){if(members[id].isHost)return id;}
+  return hostId||'';}
 function dmSendUI(){var ip=$('dmIn');var t=(ip.value||'').trim();if(!t)return;ip.value='';dmSend(dmPeer,t);}
 function dmSend(to,text){text=(text||'').trim();if(!text||!to)return;
-  if(!isHost&&!allowDM){toast('老師已關閉私訊功能');return;}
   var m={me:true,name:myName,text:text,ts:nowHM()};
   pushDM(to,m);
   if(isHost){var c=connByUid(to);if(c){tSend(c,{t:'dmin',from:myId,name:myName,text:text,ts:nowHM()});m.sent=true;}else m.sent=false;}
@@ -4752,7 +4970,7 @@ function applyObj(m){
     o.x=m.x;o.y=m.y;
     if(typeof m.rot==='number')o.rot=m.rot;
     if(typeof m.w==='number')o.w=m.w;if(typeof m.h==='number')o.h=m.h;
-    if(o.type==='text'){
+    if(o.type==='text'||o.type==='note'){
       if(typeof m.fs==='number')o.fs=m.fs;
       if(typeof m.text==='string'){o.text=m.text;var ti=o.el&&o.el.querySelector('.dtxt-in');if(ti)ti.textContent=o.text;}
       if(m.color){o.color=m.color;if(o.el)o.el.style.color=m.color;}
@@ -4933,7 +5151,9 @@ function newTextObj(wx,wy){
   editTextObj(o);return o;}
 
 function editTextObj(o){
-  if(!o||o.type!=='text'||!o.el)return;
+  /* 2026-08-21 修正：原本只認 type==='text'，但 makeObjEl 也替便利貼綁了 dblclick
+     去呼叫這裡，結果便利貼的文字從來都編輯不了（v7.4／v9.6 上游同樣沒修）。 */
+  if(!o||(o.type!=='text'&&o.type!=='note')||!o.el)return;
   var L=objLayer();if(L)L.classList.add('active');
   o.el.classList.add('editing');
   var tin=o.el.querySelector('.dtxt-in');if(!tin)return;
@@ -4951,12 +5171,12 @@ function editTextObj(o){
 function endTextEdit(){
   var changed=false;
   for(var i=objs.length-1;i>=0;i--){var o=objs[i];
-    if(o.type!=='text'||!o.el||!o.el.classList.contains('editing'))continue;
+    if((o.type!=='text'&&o.type!=='note')||!o.el||!o.el.classList.contains('editing'))continue;
     o.el.classList.remove('editing');
     var tin=o.el.querySelector('.dtxt-in');
     if(tin){tin.setAttribute('contenteditable','false');
       o.text=(tin.innerText||'').replace(/\u00a0/g,' ').replace(/\n+$/,'');}
-    if(!o.text||!o.text.trim()){removeObj(o.id,!!o._new);continue;}
+    if((!o.text||!o.text.trim())&&o.type==='text'){removeObj(o.id,!!o._new);continue;}
     layoutObj(o);
     ensureRoom({x0:o.x,y0:o.y,x1:o.x+o.w,y1:o.y+o.h});
     if(o._new){delete o._new;objSend({t:'obj',op:'add',o:objPub(o)});}
@@ -7178,7 +7398,9 @@ function canDMto(u){
         var can=canDMto(m.id);
         var b=document.createElement('button');
         b.className='dm-peer'+(m.id===dmPeer?' active':'')+(can?'':' locked');
-        b.innerHTML=(can?'':'🔒 ')+esc(m.name)+(m.id===hostUidGuess()?' <i class="tg">老師</i>':'')+
+        /* 名字本來就叫「老師」時不要再換一個「老師」標籤，會讀成「老師 老師」 */
+        var _isH=(m.id===hostUidGuess()), _nm=String(m.name||'');
+        b.innerHTML=(can?'':'🔒 ')+esc(_nm)+((_isH&&_nm.indexOf('老師')<0)?' <i class="tg">老師</i>':'')+
           (dmUnread[m.id]?('<i>'+dmUnread[m.id]+'</i>'):'');
         b.title=can?'可傳送':'老師目前關閉了學員之間的私訊';
         b.onclick=function(){dmPeer=m.id;delete dmUnread[m.id];updateDmBadge();renderDM();};
@@ -9093,6 +9315,2002 @@ function updateClearBtn(){
       notice('老師的協作白板進行中，已幫你載入目前的板面');}
     return base.apply(this,arguments);};
 })();
+</script>
+
+<script>
+/* =========================================================
+   v7.5 移植 — 白板版型模板庫 + SVG 向量匯出
+
+   版型是教學結構（心智圖／康乃爾／SWOT／九宮格／KWL／魚骨圖），不是裝飾。
+   一鍵鋪出的方框都是既有的便利貼物件，因此自動獲得拖曳、縮放、旋轉、
+   蓋印、存檔與即時同步。彈窗 id 改為 tlib* ——v9.6 原本用 tplModal／tplTitle，
+   會與我們既有的「卡片範本／圖章」選擇器撞名。
+   ========================================================= */
+
+/* =========================================================
+   貼課通 v7.5 — 白板版型模板庫 + SVG 向量匯出
+   ========================================================= */
+var TPL_BG={y:'#ffe27a',b:'#c9ecff',g:'#d7f5d0',r:'#ffd0d0',p:'#e8dcff',o:'#ffd9b0',w:'#f6f1e4'};
+var _tplMade=[];
+
+function tplNote(x,y,w,h,text,bg,fs){
+  var o={id:'t'+(++_objSeq)+'_'+Math.random().toString(36).slice(2,7),type:'note',
+    text:text||'',fs:fs||18,color:'#3a3021',font:drawFont,bg:bg||TPL_BG.y,
+    x:x,y:y,w:w,h:h,rot:0};
+  addObj(o);_tplMade.push(o);return o;}
+function tplText(x,y,text,fs,color){
+  var o={id:'t'+(++_objSeq)+'_'+Math.random().toString(36).slice(2,7),type:'text',
+    text:text||'',fs:fs||26,color:color||'#3a3021',font:drawFont,
+    x:x,y:y,w:200,h:(fs||26)*1.3,rot:0};
+  addObj(o);_tplMade.push(o);return o;}
+function tplShape(kind,x,y,w,h,color,sw,d1,fill){
+  var o={id:'t'+(++_objSeq)+'_'+Math.random().toString(36).slice(2,7),type:'shape',
+    shape:kind,color:color||'#8a5e1e',sw:sw||3,fill:!!fill,d1:(d1===undefined?true:d1),
+    x:x,y:y,w:Math.max(4,w),h:Math.max(4,h),rot:0};
+  addObj(o);_tplMade.push(o);return o;}
+function tplFinish(name){
+  var bb=null;
+  _tplMade.forEach(function(o){var r=objAABB(o);
+    if(!bb)bb={x0:r.x0,y0:r.y0,x1:r.x1,y1:r.y1};
+    else{bb.x0=Math.min(bb.x0,r.x0);bb.y0=Math.min(bb.y0,r.y0);
+      bb.x1=Math.max(bb.x1,r.x1);bb.y1=Math.max(bb.y1,r.y1);}});
+  if(bb)ensureRoom(bb);
+  selIds=_tplMade.map(function(o){return o.id;});
+  objSel=selIds[selIds.length-1]||null;refreshSelUI();
+  setTool('obj');applyBoardView();
+  if(typeof pushHistory==='function')pushHistory();
+  if(typeof dFit==='function')dFit();
+  $('tlibModal').classList.remove('show');
+  toast('已鋪上「'+name+'」版型，內容可直接雙擊修改');}
+
+function tplOrigin(){return {x:viewX+60/dZoom,y:viewY+60/dZoom};}
+
+/* ---------- 各版型 ---------- */
+function tplMindmap(title){
+  var o=tplOrigin(),CX=o.x+520,CY=o.y+340;
+  _tplMade=[];
+  tplNote(CX-130,CY-70,260,140,title||'中心主題',TPL_BG.o,24);
+  var pos=[[-460,-260],[0,-320],[460,-260],[-460,180],[0,240],[460,180]];
+  var bgs=[TPL_BG.y,TPL_BG.b,TPL_BG.g,TPL_BG.p,TPL_BG.r,TPL_BG.w];
+  pos.forEach(function(p,i){
+    var x=CX+p[0]-110,y=CY+p[1]-55;
+    tplNote(x,y,220,110,'分支 '+(i+1),bgs[i%bgs.length],18);
+    var sx=CX,sy=CY,ex=x+110,ey=y+55;
+    tplShape('line',Math.min(sx,ex),Math.min(sy,ey),Math.abs(ex-sx),Math.abs(ey-sy),
+      '#8a5e1e',3,((ex>=sx)===(ey>=sy)));});
+  tplFinish('心智圖');}
+
+function tplCornell(title){
+  var o=tplOrigin(),X=o.x,Y=o.y,W=1000,H=680;
+  _tplMade=[];
+  tplText(X,Y-46,(title||'課程主題')+'　'+new Date().toLocaleDateString(),26,'#8a5e1e');
+  tplNote(X,Y,300,H-180,'線索／關鍵問題\n\n・\n・\n・',TPL_BG.b,17);
+  tplNote(X+320,Y,W-320,H-180,'筆記區\n\n・\n・\n・\n・',TPL_BG.w,17);
+  tplNote(X,Y+H-160,W,160,'摘要（用自己的話寫下這頁重點）\n\n',TPL_BG.y,18);
+  tplFinish('康乃爾筆記');}
+
+function tplSWOT(title){
+  var o=tplOrigin(),X=o.x,Y=o.y,W=440,H=300,G=24;
+  _tplMade=[];
+  tplText(X,Y-46,title||'SWOT 分析',30,'#8a5e1e');
+  tplNote(X,Y,W,H,'S 優勢 Strengths\n\n・\n・',TPL_BG.g,19);
+  tplNote(X+W+G,Y,W,H,'W 劣勢 Weaknesses\n\n・\n・',TPL_BG.r,19);
+  tplNote(X,Y+H+G,W,H,'O 機會 Opportunities\n\n・\n・',TPL_BG.b,19);
+  tplNote(X+W+G,Y+H+G,W,H,'T 威脅 Threats\n\n・\n・',TPL_BG.p,19);
+  tplFinish('SWOT 分析');}
+
+function tplNine(title){
+  var o=tplOrigin(),X=o.x,Y=o.y,S=260,G=18;
+  _tplMade=[];
+  tplText(X,Y-46,title||'九宮格思考',30,'#8a5e1e');
+  for(var r=0;r<3;r++)for(var c=0;c<3;c++){
+    var mid=(r===1&&c===1);
+    tplNote(X+c*(S+G),Y+r*(S+G),S,S,mid?(title||'中心主題'):'',mid?TPL_BG.o:TPL_BG.w,mid?22:18);}
+  tplFinish('九宮格');}
+
+function tplKWL(title){
+  var o=tplOrigin(),X=o.x,Y=o.y,W=380,H=520,G=22;
+  _tplMade=[];
+  tplText(X,Y-46,(title||'主題')+'　KWL 表',30,'#8a5e1e');
+  tplNote(X,Y,W,H,'K 我已經知道\nWhat I Know\n\n・\n・\n・',TPL_BG.b,18);
+  tplNote(X+W+G,Y,W,H,'W 我想知道\nWhat I Want to know\n\n・\n・\n・',TPL_BG.y,18);
+  tplNote(X+(W+G)*2,Y,W,H,'L 我學到了\nWhat I Learned\n\n・\n・\n・',TPL_BG.g,18);
+  tplFinish('KWL 表');}
+
+function tplFishbone(title){
+  var o=tplOrigin(),X=o.x,Y=o.y;
+  var SPINE_Y=Y+330,SPINE_X0=X,SPINE_X1=X+980;
+  _tplMade=[];
+  tplNote(SPINE_X1+20,SPINE_Y-80,240,160,title||'問題／結果',TPL_BG.r,20);
+  tplShape('arrow',SPINE_X0,SPINE_Y-3,SPINE_X1-SPINE_X0,6,'#8a5e1e',5,true);
+  var ups=['人 Man','機 Machine','料 Material'],dns=['法 Method','環 Environment','測 Measurement'];
+  var bgs=[TPL_BG.y,TPL_BG.b,TPL_BG.g];
+  ups.forEach(function(t,i){
+    var bx=SPINE_X0+150+i*280;
+    tplShape('line',bx,SPINE_Y-230,150,230,'#8a5e1e',3,false);
+    tplNote(bx-40,SPINE_Y-330,230,110,t+'\n・',bgs[i%3],17);});
+  dns.forEach(function(t,i){
+    var bx=SPINE_X0+150+i*280;
+    tplShape('line',bx,SPINE_Y,150,230,'#8a5e1e',3,true);
+    tplNote(bx+70,SPINE_Y+230,230,110,t+'\n・',bgs[i%3],17);});
+  tplFinish('魚骨圖');}
+
+var TPLS=[
+  ['mind','<svg class="ic" fill="none"><use href="#ic-brain"/></svg> 心智圖','中心主題 + 6 個可延伸的分支'],
+  ['cornell','<svg class="ic" fill="none"><use href="#ic-book"/></svg> 康乃爾筆記','線索欄／筆記區／摘要三段式'],
+  ['swot','<svg class="ic" fill="none"><use href="#ic-crosshair"/></svg> SWOT 分析','優勢・劣勢・機會・威脅 四象限'],
+  ['nine','<svg class="ic" fill="none"><use href="#ic-grid"/></svg> 九宮格','3×3 曼陀羅思考，中心為主題'],
+  ['kwl','<svg class="ic" fill="none"><use href="#ic-columns"/></svg> KWL 表','已知／想知道／學到了 三欄'],
+  ['fish','<svg class="ic" fill="none"><use href="#ic-shapes"/></svg> 魚骨圖','人機料法環測，找出問題原因']
+];
+function openTplLib(){
+  if(!$('drawModal').classList.contains('show')){toast('請先開啟畫布');return;}
+  var b=$('tlibBody');
+  if(b&&!b.children.length){
+    var h='';
+    TPLS.forEach(function(t){
+      h+='<button class="tpl-card" onclick="useTpl(\''+t[0]+'\')">'+
+        '<b>'+t[1]+'</b><span>'+t[2]+'</span></button>';});
+    b.innerHTML=h;}
+  $('tlibModal').classList.add('show');
+  setTimeout(function(){var i=$('tlibTitle');if(i)i.focus();},80);}
+function useTpl(k){
+  var t=(($('tlibTitle')&&$('tlibTitle').value)||'').trim();
+  if(k==='mind')tplMindmap(t);
+  else if(k==='cornell')tplCornell(t);
+  else if(k==='swot')tplSWOT(t);
+  else if(k==='nine')tplNine(t);
+  else if(k==='kwl')tplKWL(t);
+  else if(k==='fish')tplFishbone(t);}
+
+/* =========================================================
+   SVG 向量匯出
+   ========================================================= */
+function svgEsc(s){return String(s==null?'':s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+  .replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function svgWrap(text,fs,font,maxW){
+  var c=document.createElement('canvas').getContext('2d');
+  c.font='700 '+fs+'px '+(font||drawFont);
+  var out=[];
+  String(text||'').split('\n').forEach(function(ln){
+    if(!ln){out.push('');return;}
+    var cur='';
+    for(var i=0;i<ln.length;i++){
+      var t=cur+ln[i];
+      if(c.measureText(t).width>maxW&&cur){out.push(cur);cur=ln[i];}
+      else cur=t;}
+    out.push(cur);});
+  return out;}
+function svgRot(o){
+  if(!o.rot)return '';
+  return ' transform="rotate('+o.rot+' '+(o.x+o.w/2).toFixed(1)+' '+(o.y+o.h/2).toFixed(1)+')"';}
+function svgObj(o){
+  var s='';
+  if(o.type==='note'){
+    s+='<rect x="'+o.x.toFixed(1)+'" y="'+o.y.toFixed(1)+'" width="'+o.w.toFixed(1)+'" height="'+o.h.toFixed(1)+
+       '" rx="8" fill="'+(o.bg||'#ffe27a')+'"'+svgRot(o)+'/>';
+    var fs=o.fs||18,lh=fs*1.35,pad=10;
+    var lines=svgWrap(o.text,fs,o.font,o.w-pad*2);
+    var g='<g'+svgRot(o)+'>';
+    lines.forEach(function(ln,i){
+      var y=o.y+pad+fs*0.95+i*lh;
+      if(y>o.y+o.h-2)return;
+      g+='<text x="'+(o.x+pad).toFixed(1)+'" y="'+y.toFixed(1)+'" font-family="'+(o.font||'sans-serif')+
+         '" font-size="'+fs+'" font-weight="700" fill="'+(o.color||'#333')+'">'+svgEsc(ln)+'</text>';});
+    return s+g+'</g>';}
+  if(o.type==='text'){
+    var f2=o.fs||24,lh2=f2*1.25;
+    var g2='<g'+svgRot(o)+'>';
+    String(o.text||'').split('\n').forEach(function(ln,i){
+      g2+='<text x="'+o.x.toFixed(1)+'" y="'+(o.y+f2*0.95+i*lh2).toFixed(1)+'" font-family="'+(o.font||'sans-serif')+
+          '" font-size="'+f2+'" font-weight="700" fill="'+(o.color||'#111')+'">'+svgEsc(ln)+'</text>';});
+    return g2+'</g>';}
+  if(o.type==='shape'){
+    var c=o.color||'#111',sw=o.sw||3,fill=o.fill?c:'none',fo=o.fill?'0.18':'0';
+    var x=o.x,y=o.y,w=o.w,h=o.h,r=svgRot(o);
+    if(o.shape==='rect')return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="4" fill="'+fill+'" fill-opacity="'+fo+'" stroke="'+c+'" stroke-width="'+sw+'"'+r+'/>';
+    if(o.shape==='ellipse')return '<ellipse cx="'+(x+w/2)+'" cy="'+(y+h/2)+'" rx="'+(w/2)+'" ry="'+(h/2)+'" fill="'+fill+'" fill-opacity="'+fo+'" stroke="'+c+'" stroke-width="'+sw+'"'+r+'/>';
+    if(o.shape==='triangle')return '<polygon points="'+(x+w/2)+','+y+' '+(x+w)+','+(y+h)+' '+x+','+(y+h)+'" fill="'+fill+'" fill-opacity="'+fo+'" stroke="'+c+'" stroke-width="'+sw+'" stroke-linejoin="round"'+r+'/>';
+    if(o.shape==='diamond')return '<polygon points="'+(x+w/2)+','+y+' '+(x+w)+','+(y+h/2)+' '+(x+w/2)+','+(y+h)+' '+x+','+(y+h/2)+'" fill="'+fill+'" fill-opacity="'+fo+'" stroke="'+c+'" stroke-width="'+sw+'" stroke-linejoin="round"'+r+'/>';
+    var x1=(o.d1===false)?(x+w):x,y1=y,x2=(o.d1===false)?x:(x+w),y2=y+h;
+    var dash=(o.shape==='dline')?' stroke-dasharray="'+(sw*2.5)+' '+(sw*2)+'"':'';
+    var line='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+c+'" stroke-width="'+sw+'" stroke-linecap="round"'+dash+'/>';
+    if(o.shape==='arrow'){
+      var ang=Math.atan2(y2-y1,x2-x1),L=Math.max(10,sw*3.2);
+      line+='<polyline points="'+(x2-L*Math.cos(ang+0.5))+','+(y2-L*Math.sin(ang+0.5))+' '+x2+','+y2+' '+
+            (x2-L*Math.cos(ang-0.5))+','+(y2-L*Math.sin(ang-0.5))+'" fill="none" stroke="'+c+'" stroke-width="'+sw+'" stroke-linecap="round" stroke-linejoin="round"/>';}
+    return '<g'+r+'>'+line+'</g>';}
+  /* 圖片 */
+  if(o.src)return '<image x="'+o.x+'" y="'+o.y+'" width="'+o.w+'" height="'+o.h+'" href="'+svgEsc(o.src)+'" preserveAspectRatio="none"'+svgRot(o)+'/>';
+  return '';}
+
+function exportBoardSVG(includeStrokes){
+  if(annoId){toast('標註模式不支援 SVG 匯出');return;}
+  var b=(typeof contentBounds==='function')?contentBounds():contentBox;
+  var pad=40,x0,y0,x1,y1;
+  if(b){x0=b.x0-pad;y0=b.y0-pad;x1=b.x1+pad;y1=b.y1+pad;}
+  else{x0=viewX;y0=viewY;x1=viewX+dViewW()/dZoom;y1=viewY+dViewH()/dZoom;}
+  var W=Math.max(20,x1-x0),H=Math.max(20,y1-y0);
+  var parts=[];
+  parts.push('<?xml version="1.0" encoding="UTF-8"?>');
+  parts.push('<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" '+
+    'width="'+Math.round(W)+'" height="'+Math.round(H)+'" viewBox="0 0 '+W.toFixed(1)+' '+H.toFixed(1)+'">');
+  parts.push('<rect width="100%" height="100%" fill="#ffffff"/>');
+  parts.push('<g transform="translate('+(-x0).toFixed(1)+','+(-y0).toFixed(1)+')">');
+  if(includeStrokes!==false){
+    var raster='';
+    try{raster=board.toDataURL('image/webp',0.9);}catch(e){try{raster=board.toDataURL('image/png');}catch(e2){}}
+    if(raster)parts.push('<image x="'+worldOff.x.toFixed(1)+'" y="'+worldOff.y.toFixed(1)+
+      '" width="'+bWorldW().toFixed(1)+'" height="'+bWorldH().toFixed(1)+'" href="'+raster+'" preserveAspectRatio="none"/>');}
+  objs.forEach(function(o){parts.push(svgObj(o));});
+  parts.push('</g></svg>');
+  var svg=parts.join('\n');
+  var name=(boardMode()==='collab'?'協作白板_':'畫布_')+safeName(roomName)+'_'+_stamp()+'.svg';
+  dl(name,new Blob([svg],{type:'image/svg+xml;charset=utf-8'}));
+  var m=$('boardSaveModal');if(m)m.classList.remove('show');
+  toast('已匯出 SVG（物件為向量，可在 Illustrator／Inkscape 編輯）');}
+
+/* 存檔視窗加入 SVG 選項 */
+(function(){var base=openBoardSave;
+  window.openBoardSave=function(){
+    base();
+    var card=$('boardSaveModal')?$('boardSaveModal').querySelector('.cm-card'):null;
+    if(!card||$('svgBtnRow'))return;
+    var png=card.querySelector('button[onclick="saveBoardPNG()"]');
+    var row=document.createElement('div');row.id='svgBtnRow';
+    row.innerHTML='<button class="btn btn-ghost" style="margin-top:8px;width:100%" onclick="exportBoardSVG(true)"><svg class="ic" fill="none"><use href="#ic-download"/></svg> 匯出 SVG（向量，可進 Illustrator）</button>'+
+      '<button class="btn btn-ghost" style="margin-top:8px;width:100%" onclick="exportBoardSVG(false)"><svg class="ic" fill="none"><use href="#ic-download"/></svg> 匯出 SVG（只要物件，不含手繪筆跡）</button>';
+    if(png&&png.parentNode)png.parentNode.insertBefore(row,png.nextSibling);
+    else card.appendChild(row);};})();
+
+</script>
+
+<script>
+/* =========================================================
+   v7.8 移植 — 在任何工具下雙擊便利貼／文字即可直接輸入
+
+   原本要先切到「物件」工具才能雙擊編輯。
+   ========================================================= */
+
+/* =========================================================
+   貼課通 v7.8 — 在任何工具下雙擊便利貼／文字即可直接輸入
+   ========================================================= */
+function ptInObj(o,wx,wy){
+  var cx=o.x+o.w/2,cy=o.y+o.h/2;
+  var r=-(o.rot||0)*Math.PI/180;
+  var dx=wx-cx,dy=wy-cy;
+  var lx=dx*Math.cos(r)-dy*Math.sin(r);
+  var ly=dx*Math.sin(r)+dy*Math.cos(r);
+  return Math.abs(lx)<=o.w/2&&Math.abs(ly)<=o.h/2;}
+function objAtWorld(wx,wy,kinds){
+  for(var i=objs.length-1;i>=0;i--){
+    var o=objs[i];
+    if(kinds&&kinds.indexOf(o.type||'img')<0)continue;
+    if(ptInObj(o,wx,wy))return o;}
+  return null;}
+function evtWorld(e){
+  var a=$('drawArea');if(!a)return null;
+  var r=a.getBoundingClientRect();
+  return {x:viewX+(e.clientX-r.left)/dZoom,y:viewY+(e.clientY-r.top)/dZoom};}
+
+function quickEditAt(e){
+  if(annoId)return false;
+  var m=$('drawModal');if(!m||!m.classList.contains('show'))return false;
+  var w=evtWorld(e);if(!w)return false;
+  var o=objAtWorld(w.x,w.y,['note','text']);
+  if(!o)return false;
+  if(drawTool!=='obj')setTool('obj');
+  selectObj(o.id);
+  editTextObj(o);
+  /* 內容很短（多半是版型預設字）就整段選起來，直接打字覆蓋 */
+  setTimeout(function(){
+    var tin=o.el&&o.el.querySelector('.dtxt-in');if(!tin)return;
+    var t=(tin.innerText||'').trim();
+    if(t.length<=30&&t.length>0){
+      try{
+        var rg=document.createRange();rg.selectNodeContents(tin);
+        var s=window.getSelection();s.removeAllRanges();s.addRange(rg);
+      }catch(err){}}},60);
+  return true;}
+
+(function(){
+  function bind(){
+    var a=$('drawArea');
+    if(!a||a._qedit)return;
+    a._qedit=1;
+    a.addEventListener('dblclick',function(e){
+      if(e.target&&e.target.getAttribute&&e.target.getAttribute('contenteditable')==='true')return;
+      if(quickEditAt(e)){e.preventDefault();e.stopPropagation();}},true);
+    /* 觸控裝置：連點兩下 */
+    var lastT=0,lastX=0,lastY=0;
+    a.addEventListener('pointerup',function(e){
+      if(e.pointerType!=='touch')return;
+      var now=Date.now();
+      if(now-lastT<320&&Math.abs(e.clientX-lastX)<24&&Math.abs(e.clientY-lastY)<24){
+        if(quickEditAt(e)){e.preventDefault();}
+        lastT=0;return;}
+      lastT=now;lastX=e.clientX;lastY=e.clientY;},true);}
+  var base=openDraw;
+  window.openDraw=function(){base();setTimeout(bind,200);};
+  setInterval(bind,1500);
+})();
+
+/* 編輯中按 Tab 跳到下一個便利貼／文字，方便版型逐格填寫 */
+document.addEventListener('keydown',function(e){
+  if(e.key!=='Tab')return;
+  var m=$('drawModal');if(!m||!m.classList.contains('show')||annoId)return;
+  var el=e.target;
+  if(!el||!el.getAttribute||el.getAttribute('contenteditable')!=='true')return;
+  var host=el.closest?el.closest('.dobj'):null;if(!host)return;
+  var id=host.getAttribute('data-id');
+  var list=objs.filter(function(o){return o.type==='note'||o.type==='text';});
+  var i=-1;for(var k=0;k<list.length;k++)if(list[k].id===id){i=k;break;}
+  if(i<0)return;
+  e.preventDefault();
+  endTextEdit();
+  var nx=list[(i+(e.shiftKey?-1:1)+list.length)%list.length];
+  setTimeout(function(){
+    selectObj(nx.id);editTextObj(nx);
+    setTimeout(function(){
+      var tin=nx.el&&nx.el.querySelector('.dtxt-in');if(!tin)return;
+      var t=(tin.innerText||'').trim();
+      if(t.length<=30&&t.length>0){
+        try{var rg=document.createRange();rg.selectNodeContents(tin);
+          var s=window.getSelection();s.removeAllRanges();s.addRange(rg);}catch(err){}}},60);
+  },80);},true);
+
+</script>
+
+<script>
+/* =========================================================
+   v7.7-B 移植 — 貼文朗讀（TTS）
+
+   用瀏覽器內建 speechSynthesis，零外部依賴、零金鑰。
+   当時只取 TTS，即時字幕後來於 2026-08-21 補收（見本檔尾端字幕區塊），
+   但仍不收字幕翻譯——那依賴 translate.googleapis.com 未公開端點。
+   ========================================================= */
+/* =========================================================
+   v7.7-B — 貼文朗讀（TTS）
+   ========================================================= */
+var ttsCfg={rate:1,voice:''};
+try{var _tc=localStorage.getItem('shr_tts');if(_tc)ttsCfg=JSON.parse(_tc);}catch(e){}
+function ttsSave(){try{localStorage.setItem('shr_tts',JSON.stringify(ttsCfg));}catch(e){}}
+function ttsSupported(){return !!window.speechSynthesis;}
+function pickVoice(){
+  if(!ttsSupported())return null;
+  var vs=speechSynthesis.getVoices()||[];
+  if(ttsCfg.voice){for(var i=0;i<vs.length;i++)if(vs[i].name===ttsCfg.voice)return vs[i];}
+  for(var j=0;j<vs.length;j++)if(/zh[-_]?TW|cmn-Hant|Chinese \(Taiwan\)/i.test(vs[j].lang+' '+vs[j].name))return vs[j];
+  for(var k=0;k<vs.length;k++)if(/^zh/i.test(vs[k].lang))return vs[k];
+  return vs[0]||null;}
+function stopTTS(){
+  try{speechSynthesis.cancel();}catch(e){}
+  var b=$('ttsBar');if(b)b.style.display='none';
+  [].forEach.call(document.querySelectorAll('.tts-btn.on'),function(x){x.classList.remove('on');x.innerHTML='<svg class="ic" fill="none"><use href="#ic-volume"/></svg> 朗讀';});}
+function speakText(txt,btn){
+  if(!ttsSupported()){toast('此瀏覽器不支援語音朗讀');return;}
+  if(!txt||!txt.trim()){toast('這則貼文沒有可朗讀的文字');return;}
+  stopTTS();
+  var u=new SpeechSynthesisUtterance(txt.slice(0,3000));
+  var v=pickVoice();if(v){u.voice=v;u.lang=v.lang;}else u.lang='zh-TW';
+  u.rate=ttsCfg.rate||1;
+  u.onend=function(){stopTTS();};
+  u.onerror=function(){stopTTS();};
+  if(btn){btn.classList.add('on');btn.innerHTML='<svg class="ic" fill="none"><use href="#ic-stop"/></svg> 停止';}
+  showTtsBar();
+  try{speechSynthesis.speak(u);}catch(e){toast('朗讀失敗');stopTTS();}}
+function speakPost(id,btn){
+  if(btn&&btn.classList.contains('on')){stopTTS();return;}
+  var p=findPost(id);if(!p)return;
+  var t=(p.subject?p.subject+'。':'')+(p.text||'');
+  if(!t.trim()&&p.quote)t=p.quote.snippet||'';
+  speakText(t,btn);}
+function showTtsBar(){
+  var b=$('ttsBar');
+  if(!b){
+    b=document.createElement('div');b.id='ttsBar';b.className='tts-bar';
+    b.innerHTML='<span><svg class="ic" fill="none"><use href="#ic-volume"/></svg> 朗讀中</span>'+
+      '<button onclick="ttsRate(-0.2)">慢</button>'+
+      '<span id="ttsRateV"></span>'+
+      '<button onclick="ttsRate(0.2)">快</button>'+
+      '<button class="stop" onclick="stopTTS()"><svg class="ic" fill="none"><use href="#ic-stop"/></svg> 停止</button>';
+    document.body.appendChild(b);}
+  b.style.display='';
+  var r=$('ttsRateV');if(r)r.textContent=(ttsCfg.rate||1).toFixed(1)+'×';}
+function ttsRate(d){
+  ttsCfg.rate=Math.max(0.5,Math.min(2,(ttsCfg.rate||1)+d));ttsSave();
+  var r=$('ttsRateV');if(r)r.textContent=ttsCfg.rate.toFixed(1)+'×';
+  toast('語速 '+ttsCfg.rate.toFixed(1)+'×（下一則生效）');}
+/* 每張卡片補上朗讀鈕 */
+(function(){
+  function addTts(card){
+    if(!card||card._tts)return;
+    var id=card.getAttribute&&card.getAttribute('data-id');if(!id)return;
+    var p=findPost(id);if(!p)return;
+    var hasText=(p.text&&p.text.trim())||(p.subject&&p.subject.trim());
+    if(!hasText)return;
+    card._tts=1;
+    var row=card.querySelector('.media-acts');
+    if(!row){row=document.createElement('div');row.className='media-acts';
+      var anchor=card.querySelector('.cmt-wrap');
+      if(anchor&&anchor.parentNode)anchor.parentNode.insertBefore(row,anchor);else card.appendChild(row);}
+    var b=document.createElement('button');b.className='tts-btn';b.innerHTML='<svg class="ic" fill="none"><use href="#ic-volume"/></svg> 朗讀';
+    b.onclick=function(e){e.stopPropagation();speakPost(id,b);};
+    row.appendChild(b);}
+  function scan(root){
+    if(!root||!root.querySelectorAll)return;
+    [].forEach.call(root.querySelectorAll('.card[data-id]'),addTts);
+    if(root.classList&&root.classList.contains('card'))addTts(root);}
+  try{
+    var mo=new MutationObserver(function(ms){ms.forEach(function(m){[].forEach.call(m.addedNodes||[],scan);});});
+    mo.observe(document.body,{childList:true,subtree:true});
+  }catch(e){}
+  setInterval(function(){scan(document.body);},2000);
+  if(window.speechSynthesis)try{speechSynthesis.onvoiceschanged=function(){};}catch(e){}
+})();
+
+</script>
+
+<script>
+/* =========================================================
+   v8.8 移植 — 簡體自動轉繁體
+
+   v9.6 只把它用在字幕，這裡擴大到貼文：掛在 renderRich（顯示層），
+   原始資料不動，可由教師管理面板隨時關閉。
+   ========================================================= */
+var S2T_PHRASE=[
+ ['软件','軟體'],['硬件','硬體'],['网络','網路'],['网路','網路'],['服务器','伺服器'],['视频','影片'],
+ ['音频','音訊'],['数据','資料'],['数据库','資料庫'],['打印','列印'],['文件夹','資料夾'],['内存','記憶體'],
+ ['硬盘','硬碟'],['光盘','光碟'],['鼠标','滑鼠'],['程序','程式'],['缺省','預設'],['默认','預設'],
+ ['信息','訊息'],['短信','簡訊'],['视屏','影片'],['界面','介面'],['菜单','選單'],['字体','字型'],
+ ['分辨率','解析度'],['像素','像素'],['优化','最佳化'],['调试','除錯'],['编译','編譯'],['算法','演算法'],
+ ['服务','服務'],['登录','登入'],['注销','登出'],['安装','安裝'],['卸载','移除'],['下载','下載'],
+ ['上传','上傳'],['刷新','重新整理'],['浏览器','瀏覽器'],['云端','雲端'],['备份','備份'],['压缩','壓縮'],
+ ['解压','解壓縮'],['邮件','郵件'],['邮箱','信箱'],['账号','帳號'],['密码','密碼'],['授权','授權'],
+ ['权限','權限'],['网站','網站'],['网页','網頁'],['链接','連結'],['地址','位址'],['端口','連接埠'],
+ ['集群','叢集'],['容器','容器'],['虚拟机','虛擬機'],['传感器','感測器'],['芯片','晶片'],['摄像头','攝影機'],
+ ['打印机','印表機'],['显示器','螢幕'],['笔记本','筆記型電腦'],['台式机','桌上型電腦'],['移动','行動'],
+ ['应用','應用'],['质量','品質'],['项目','專案'],['文档','文件'],['报告','報告'],['统计','統計'],
+ ['里面','裡面'],['里头','裡頭'],['里边','裡邊'],['这里','這裡'],['那里','那裡'],['哪里','哪裡'],
+ ['心里','心裡'],['手里','手裡'],['家里','家裡'],['眼里','眼裡'],['嘴里','嘴裡'],['城里','城裡'],
+ ['屋里','屋裡'],['夜里','夜裡'],['骨子里','骨子裡'],['脑子里','腦子裡']
+];
+var S2T_PAIRS=(
+ '爱愛 碍礙 袄襖 罢罷 摆擺 败敗 办辦 帮幫 宝寶 报報 备備 贝貝 币幣 毕畢 边邊 变變 标標 别別 宾賓 补補 '+
+ '财財 参參 惭慚 仓倉 苍蒼 层層 产產 长長 尝嘗 偿償 厂廠 场場 车車 彻徹 尘塵 陈陳 衬襯 称稱 惩懲 迟遲 '+
+ '冲衝 丑醜 础礎 处處 触觸 传傳 疮瘡 闯闖 创創 纯純 词詞 从從 丛叢 凑湊 窜竄 错錯 达達 带帶 贷貸 单單 '+
+ '担擔 胆膽 弹彈 当當 挡擋 党黨 导導 岛島 祷禱 灯燈 邓鄧 敌敵 涤滌 递遞 点點 电電 垫墊 钓釣 调調 谍諜 '+
+ '叠疊 顶頂 订訂 东東 动動 冻凍 斗鬥 独獨 读讀 赌賭 锻鍛 断斷 对對 队隊 吨噸 夺奪 堕墮 鹅鵝 额額 恶惡 '+
+ '儿兒 尔爾 饿餓 发發 罚罰 阀閥 范範 贩販 饭飯 访訪 纺紡 飞飛 废廢 费費 纷紛 坟墳 奋奮 愤憤 粪糞 丰豐 '+
+ '风風 冯馮 讽諷 凤鳳 肤膚 妇婦 复復 该該 盖蓋 钢鋼 纲綱 岗崗 刚剛 阁閣 个個 给給 巩鞏 沟溝 构構 购購 '+
+ '够夠 顾顧 关關 观觀 馆館 惯慣 广廣 归歸 龟龜 规規 柜櫃 国國 过過 华華 画畫 划劃 怀懷 坏壞 欢歡 环環 '+
+ '还還 换換 唤喚 挥揮 汇匯 会會 讳諱 贿賄 秽穢 浑渾 获獲 货貨 祸禍 击擊 机機 积積 饥饑 讥譏 极極 级級 '+
+ '挤擠 几幾 计計 记記 际際 剂劑 济濟 继繼 价價 驾駕 歼殲 艰艱 检檢 见見 键鍵 舰艦 剑劍 渐漸 涧澗 讲講 '+
+ '奖獎 酱醬 胶膠 浇澆 骄驕 娇嬌 搅攪 铰鉸 缴繳 阶階 节節 洁潔 结結 诫誡 紧緊 谨謹 进進 尽盡 惊驚 经經 '+
+ '茎莖 惧懼 剧劇 据據 觉覺 绝絕 军軍 开開 凯凱 颗顆 壳殼 课課 垦墾 恳懇 抠摳 库庫 夸誇 块塊 亏虧 矿礦 '+
+ '扩擴 阔闊 蜡蠟 来來 兰蘭 拦攔 栏欄 烂爛 滥濫 劳勞 涝澇 乐樂 垒壘 类類 泪淚 篱籬 离離 礼禮 隶隸 历歷 '+
+ '厉厲 励勵 丽麗 联聯 怜憐 帘簾 练練 炼煉 粮糧 两兩 辆輛 谅諒 疗療 猎獵 临臨 邻鄰 灵靈 龄齡 铃鈴 岭嶺 '+
+ '领領 刘劉 浏瀏 龙龍 聋聾 笼籠 楼樓 芦蘆 卢盧 虏虜 鲁魯 陆陸 录錄 虑慮 乱亂 轮輪 论論 罗羅 络絡 骆駱 '+
+ '妈媽 马馬 骂罵 吗嗎 买買 卖賣 迈邁 麦麥 满滿 蛮蠻 猫貓 么麼 没沒 门門 闷悶 们們 梦夢 庙廟 灭滅 悯憫 '+
+ '闽閩 鸣鳴 谬謬 谋謀 亩畝 难難 恼惱 脑腦 闹鬧 内內 拟擬 酿釀 鸟鳥 宁寧 农農 浓濃 疟瘧 欧歐 呕嘔 盘盤 '+
+ '庞龐 赔賠 喷噴 骗騙 飘飄 频頻 贫貧 苹蘋 凭憑 评評 泼潑 铺鋪 谱譜 齐齊 骑騎 启啟 气氣 弃棄 迁遷 签簽 '+
+ '谦謙 钱錢 钳鉗 潜潛 浅淺 谴譴 枪槍 强強 墙牆 抢搶 桥橋 侨僑 窍竅 窃竊 亲親 轻輕 倾傾 请請 庆慶 琼瓊 '+
+ '穷窮 区區 驱驅 趋趨 权權 劝勸 确確 让讓 扰擾 绕繞 热熱 认認 韧韌 荣榮 绒絨 软軟 锐銳 洒灑 伞傘 丧喪 '+
+ '骚騷 涩澀 杀殺 纱紗 筛篩 晒曬 删刪 闪閃 陕陝 赡贍 伤傷 赏賞 烧燒 绍紹 设設 绅紳 审審 肾腎 声聲 绳繩 '+
+ '胜勝 圣聖 师師 湿濕 时時 蚀蝕 实實 识識 势勢 适適 释釋 饰飾 试試 视視 寿壽 兽獸 书書 术術 树樹 帅帥 '+
+ '双雙 谁誰 顺順 说說 硕碩 丝絲 松鬆 苏蘇 诉訴 肃肅 虽雖 随隨 岁歲 孙孫 损損 缩縮 琐瑣 锁鎖 台臺 态態 '+
+ '摊攤 贪貪 谈談 坛壇 叹嘆 汤湯 烫燙 誊謄 体體 条條 铁鐵 厅廳 听聽 铜銅 统統 头頭 图圖 涂塗 团團 椭橢 '+
+ '洼窪 袜襪 弯彎 万萬 网網 韦韋 违違 围圍 为為 维維 伟偉 纬緯 谓謂 卫衛 闻聞 问問 稳穩 务務 雾霧 牺犧 '+
+ '习習 戏戲 细細 虾蝦 辖轄 峡峽 侠俠 狭狹 厦廈 鲜鮮 纤纖 咸鹹 现現 献獻 县縣 宪憲 线線 厢廂 镶鑲 详詳 '+
+ '响響 项項 萧蕭 销銷 晓曉 啸嘯 协協 挟挾 胁脅 谐諧 写寫 泻瀉 谢謝 锌鋅 兴興 须須 许許 绪緒 续續 轩軒 '+
+ '悬懸 选選 学學 勋勳 询詢 寻尋 训訓 讯訊 逊遜 压壓 鸦鴉 哑啞 亚亞 严嚴 盐鹽 阎閻 颜顏 厌厭 阳陽 养養 '+
+ '样樣 痒癢 谣謠 药藥 爷爺 页頁 业業 叶葉 医醫 颐頤 遗遺 仪儀 义義 议議 亿億 忆憶 异異 阴陰 银銀 应應 '+
+ '婴嬰 缨纓 营營 蝇蠅 赢贏 颖穎 优優 忧憂 犹猶 邮郵 铀鈾 鱼魚 渔漁 与與 屿嶼 语語 誉譽 预預 驭馭 郁鬱 '+
+ '狱獄 渊淵 园園 员員 圆圓 缘緣 远遠 愿願 约約 跃躍 钥鑰 岳嶽 阅閱 云雲 运運 韵韻 杂雜 灾災 载載 赞贊 '+
+ '赃贓 脏臟 凿鑿 择擇 则則 泽澤 贼賊 赠贈 诈詐 斋齋 债債 毡氈 战戰 张張 涨漲 帐帳 账賬 胀脹 赵趙 这這 '+
+ '针針 侦偵 诊診 阵陣 挣掙 睁睜 争爭 郑鄭 证證 织織 职職 执執 纸紙 挚摯 掷擲 帜幟 质質 钟鐘 种種 众眾 '+
+ '昼晝 骤驟 猪豬 诸諸 烛燭 嘱囑 筑築 专專 砖磚 转轉 装裝 妆妝 壮壯 状狀 锥錐 准準 浊濁 资資 渍漬 踪蹤 '+
+ '综綜 总總 纵縱 邹鄒 组組 钻鑽 简簡 显顯 隐隱 干乾 姜薑 后後 连連 讨討 惫憊 谙諳 昙曇 荫蔭'
+).split(/\s+/);
+var S2T_MAP=null;
+
+/* 2026-08-21 補充：v9.6 原表為字幕設計，缺常用字（贴／测／将／纪…），
+   半轉會產生簡繁混雜，比不轉更糟。這裡補 68 組高頻缺字。 */
+var S2T_SUP=[["贴","貼"],["测","測"],["将","將"],["纪","紀"],["却","卻"],["属","屬"],["坚","堅"],["挂","掛"],["旧","舊"],["档","檔"],["残","殘"],["毁","毀"],["汉","漢"],["测","測"],["润","潤"],["湾","灣"],["滚","滾"],["炉","爐"],["牵","牽"],["狮","獅"],["玛","瑪"],["珑","瓏"],["疯","瘋"],["皱","皺"],["监","監"],["码","碼"],["秘","祕"],["竖","豎"],["笔","筆"],["篮","籃"],["绩","績"],["绿","綠"],["缝","縫"],["乡","鄉"],["于","於"],["仅","僅"],["仑","侖"],["伙","夥"],["伦","倫"],["伪","偽"],["余","餘"],["佣","傭"],["侣","侶"],["侧","側"],["俭","儉"],["储","儲"],["兑","兌"],["冈","岡"],["册","冊"],["决","決"],["况","況"],["净","淨"],["凉","涼"],["减","減"],["刹","剎"],["制","製"],["却","卻"],["卷","捲"],["厕","廁"],["叙","敘"],["号","號"],["吓","嚇"],["呐","吶"],["呛","嗆"],["哔","嗶"],["啰","囉"],["嗫","囁"],["囱","囪"]];
+function s2tInit(){
+  if(S2T_MAP)return;
+  S2T_MAP={};
+  /* 舊表先載入，之後由 OpenCC 權威表覆寫或移除 */
+  S2T_PAIRS.forEach(function(p){
+    if(p&&p.length===2&&p[0]!==p[1])S2T_MAP[p[0]]=p[1];});
+  try{S2T_SUP.forEach(function(p){if(p&&p.length===2&&!S2T_MAP[p[0]])S2T_MAP[p[0]]=p[1];});}catch(e){}
+  /* ---- 2026-08-21 重建單字表 ----
+     來源：OpenCC STCharacters 中「唯一對應」的 2449 字。
+     原表只有 765 字且有缺口（打扫、比赛、温度、贸易完全不轉，
+     无线→无線這種半轉比不轉更糟）。
+     OpenCC 標為一對多的 275 字（制、后、台、准、干、里…）一律不進單字表，
+     因為來源字本身就是常用繁體字，一律轉必錯；交給下方詞組表判斷。 */
+  var _SU="与专业丛东丝丢两严丧临为丽举么义乌乐乔习乡书买乱争亏亚产亩亲亵亸亿仅从仓仪们众优会伛伞伟传伡伣伤伥伦伧伪伫体佥侠侣侥侦侧侨侩侪侬侭俣俦俨俩俪俫俭债倾偬偻偾偿傤傥傧储傩儿兑兖兰关兴兹养兽冁内冈册写军农冯决况冻净凉减凑凛凤凫凭凯击凿刍刘则刚创删刬刭刹刽刿剀剂剐剑剥剧劝办务劢动励劲劳势勚匀匦匮区医华协单卖卢卧卫却卺厅厉压厌厍厐厕厢厣厦厨厩厮县叁叆叇双变叙叠号叽吓吕吗吨听启吴呐呒呓呕呖呗员呙呛呜咏咙咛咝咤响哑哒哓哔哕哙哜哝哟唛唝唠唡唢唤啧啬啭啯啰啴啸喷喽喾嗫嗳嘘嘤嘱噜嚣园囱围囵国图圆圣圹场坏块坚坜坞坟坠垄垅垆垒垦垩垫垭垯垱垲垴埘埚堑堕塆墙壮声壳壶壸处备够头夺奁奂奋奖奥妆妇妈妩妪妫姗姹娄娅娆娇娈娱娲婳婴婵婶媪媭嫒嫔嫱嬷孙学孪宝实宠审宪宫宽宾寝对寻导寿将尔尘尧尴层屃屉届属屡屦屿岁岂岖岗岘岚岛岭岽岿峃峄峡峣峤峥峦峰崂崃崄崭嵘嵚嵝巅巩巯币帅师帏帐帜带帧帮帱帻帼幂庄庆床庐庑库应庙庞废庼廪开异弃弑张弪弯弹强归彟彦彨彻徕忆忏忧忾怀态怂怃怄怅怆怜总怼怿恋恒恳恸恹恺恻恼恽悦悫悬悭悮悯惊惧惨惩惫惬惭惮惯愠愤愦慑慭懑懒懔戆戋戏戗战戬戯户扑执扩扪扫扬扰抚抛抟抠抡抢护报担拟拢拣拥拦拧拨择挚挛挜挝挞挟挠挡挢挣挤挥挦捝捞损捡换捣掳掴掷掸掺掼揽揾揿搀搁搂搄搅携摄摅摇摈摊撄撑撵撷撸撺擞攒敌敚敛敩数斋斓斩断无旧时旷旸昙昵昼昽显晋晒晓晔晕晖暂暧机杀杂权条来杨杩构枞枢枣枥枧枨枫枭柠柽栀栅标栈栉栊栋栌栎栏树栖样栾桠桡桢档桤桥桦桧桨桩桪梦梼梾梿检棁棂椁椝椟椠椢椤椫椭椮楼榄榅榇榈榉榝槚槛槟槠横樯樱橥橱橹橼檩欢欤欧歼殁殇残殒殓殚殡殴毂毕毙毡毵氇气氢氩氲汉汤汹沄沟没沣沤沥沦沧沨沩沪泞泪泶泷泸泺泻泼泽泾洁洒洼浃浅浆浇浈浉浊测浍济浏浐浑浒浓浔浕涚涛涝涞涟涠涡涢涣涤润涧涨涩渊渌渍渎渐渑渔渖渗温湾湿溁溃溅溆溇滗滚滞滠满滢滤滥滦滨滩滪潆潇潋潍潜潴澛澜濑濒灏灭灯灵灶灾灿炀炉炖炜炝点炽烁烂烃烛烦烧烨烩烫烬热焕焖焘煴爱爷牍牦牵牺犊状犷犸犹狈狝狞独狭狮狯狰狱狲猃猎猕猡猪猫猬献獭玑玙玚玛玮环现玱玺珐珑珰珲琎琏琐琼瑶瑷瑸璎瓒瓮瓯电画畅畴疖疗疟疠疡疬疭疮疯疱疴痈痉痒痖痨痪痫痴瘅瘆瘗瘘瘪瘫瘾瘿癞癣癫皑皱皲盏盐监盖盗盘眍眦眬睁睐睑瞆瞒瞩矫矶矾矿砀码砖砗砚砜砺砻砾础硁硕硖硗硙硚硵碍碛碜碱礼祃祎祢祯祷祸禀禄禅离秃秆秘积称秽秾稆税稣稳穑穞穷窃窍窎窑窜窝窥窦窭竖竞笃笋笔笕笺笼笾筚筛筜筝筹筼筿简箓箦箧箨箩箪箫篑篓篮篯篱簖籁籴类籼粜粝粤粪粮粽糁糇糍紧絷緼縆纟纠纡红纣纥约级纨纩纪纫纬纭纮纯纰纱纲纳纴纵纶纷纸纹纺纻纼纽纾线绀绁绂练组绅细织终绉绊绋绌绍绎经绐绑绒结绔绕绖绗绘给绚绛络绝绞统绠绡绢绣绤绥绦继绨绩绪绫绬续绮绯绰绲绳维绵绶绸绹绺绻综绽绾绿缀缁缂缃缄缅缆缇缈缉缊缋缌缍缎缏缐缑缒缓缔缕编缗缘缙缚缛缜缝缞缟缠缡缢缣缤缥缦缧缨缩缪缫缬缭缮缯缰缱缲缳缴缵罂网罗罚罢罴羁羟羡群翘翙翚耢耧耸耻聂聋职聍联聩聪肃肠肤肮肴肾肿胀胁胆胧胨胪胫胶脉脍脐脑脓脔脚脱脶脸腘腭腻腼腽腾膑臜舆舣舰舱舻艰艺节芈芗芜芦苁苇苈苋苌苍苎苧茎茏茑茔茕茧荆荙荚荛荜荝荞荟荠荣荤荥荦荧荨荩荪荬荭荮莅莱莲莳莴莶莸莹莺莼萚萝萤营萦萧萨葱蒀蒇蒉蒋蒌蒏蓝蓟蓠蓣蓥蓦蔂蔷蔹蔺蔼蕰蕲蕴薮藓藴蘖虏虑虚虬虮虱虽虾虿蚀蚁蚂蚃蚕蚬蛊蛎蛏蛮蛰蛱蛲蛳蛴蜕蜗蝇蝈蝉蝼蝾螀螨蟏衅衔补衬衮袄袆袜袭袯装裆裈裢裣裤褛褴襕见观觃规觅视觇览觉觊觋觌觍觎觏觐觑觞触觯訚詟誉誊讠计订讣认讥讦讧讨让讪讫讬训议讯记讱讲讳讴讵讶讷许讹论讻讼讽设访诀诂诃评诅识诇诈诉诊诋诌词诎诏诐译诒诓诔试诖诗诘诙诚诛诜话诞诟诠诡询诣诤该详诧诨诩诪诫诬语诮误诰诱诲诳说诵诶请诸诹诺读诼诽课诿谀谁谂调谄谅谆谇谈谉谊谋谌谍谎谏谐谑谒谓谔谕谖谗谘谙谚谛谜谝谞谟谠谡谢谣谤谦谧谨谩谪谫谬谭谮谯谰谱谲谳谴谵谶豮贝贞负贠贡财责贤败账货质贩贪贫贬购贮贯贰贱贲贳贴贵贶贷贸费贺贻贼贽贾贿赀赁赂赃资赅赆赇赈赉赊赋赌赍赎赏赐赑赒赓赔赕赖赗赘赙赚赛赜赟赠赡赢赣赪赵赶趋趱趸跃跄跞践跶跷跸跹跻踌踪踬踯蹑蹒蹰蹿躏躜躯輼车轧轨轩轪轫转轭轮软轰轱轲轳轴轵轶轷轸轹轺轻轼载轾轿辀辁辂较辄辅辆辇辈辉辊辋辌辍辎辏辐辑辒输辔辕辖辗辘辙辚辞辩辫边辽达迁过迈运还这进远违连迟迩迳选逊递逦逻遗遥邓邝邬邮邹邺邻郏郐郑郓郦郧郸酂酝酦酱酽酾酿醖释銮錾钅钆钇钉钊钋钌钍钎钏钐钑钒钓钔钕钖钗钘钙钚钛钜钝钞钠钡钢钣钤钦钧钨钩钪钬钭钮钯钰钱钲钳钴钵钶钷钸钹钺钼钽钾钿铀铁铂铃铄铅铆铇铈铉铊铋铌铍铎铏铐铑铒铓铔铕铖铗铘铙铚铛铜铝铞铟铠铡铢铣铤铥铦铧铨铩铪铫铬铭铮铯铰铱铳铴铵银铷铸铹铺铻铼铽铿销锁锂锃锅锆锇锈锉锊锋锌锍锎锏锐锑锒锓锔锕锖锗锘错锚锛锜锝锞锟锠锡锢锣锤锥锦锧锨锩锪锬锭键锯锰锱锲锳锴锵锶锷锸锹锺锻锼锽锾锿镀镁镂镃镄镅镆镇镈镉镊镌镍镏镐镑镒镓镔镕镖镗镘镙镚镛镜镝镞镟镠镡镣镤镥镦镧镨镩镪镫镬镭镮镯镱镲镳镴镵镶长门闩闪闫闬闭问闯闰闱闳间闵闶闷闸闹闺闻闼闽闾闿阀阁阂阃阄阅阆阇阈阉阊阋阌阍阎阏阐阑阒阓阔阕阖阗阘阙阚阛队阳阴阵阶际陆陇陈陉陕陦陧陨险随隐隶隽难雏雠雳雾霁霉霡霭靓靔静靥鞑鞒鞯鞲韦韧韨韩韪韫韬韵页顶顷顸项顺顼顽顾顿颀颁颂颃预颅领颇颈颉颊颋颌颍颎颏颐频颒颓颔颕颖颗题颙颚颛颜额颞颟颠颡颢颣颤颥颦颧风飏飐飑飒飓飔飕飖飗飘飙飚飞飨餍饣饤饦饧饨饩饪饫饬饭饮饯饰饱饲饳饴饵饶饷饸饹饺饻饼饽饾饿馀馁馂馃馄馅馆馇馈馉馊馋馌馍馎馏馐馑馒馓馔馕马驭驮驯驰驱驲驳驴驵驶驷驸驹驺驻驼驽驾驿骀骁骂骃骄骅骆骇骈骉骊骋验骍骎骏骐骑骒骓骔骕骖骗骘骙骚骛骜骝骞骟骠骡骢骣骤骥骦骧髅髋髌鬓鬶魇魉鱼鱽鱾鱿鲀鲁鲂鲄鲅鲆鲇鲈鲉鲊鲋鲌鲍鲎鲏鲐鲑鲒鲓鲔鲕鲖鲗鲘鲙鲚鲛鲜鲝鲞鲟鲠鲡鲢鲣鲤鲥鲦鲧鲨鲩鲪鲫鲬鲭鲮鲯鲰鲱鲲鲳鲴鲵鲶鲷鲸鲹鲺鲻鲼鲽鲾鲿鳀鳁鳂鳃鳄鳅鳆鳇鳈鳉鳊鳋鳌鳍鳎鳏鳐鳑鳒鳓鳔鳕鳖鳗鳘鳙鳛鳜鳝鳞鳟鳠鳡鳢鳣鸟鸠鸡鸢鸣鸤鸥鸦鸧鸨鸩鸪鸫鸬鸭鸮鸯鸰鸱鸲鸳鸴鸵鸶鸷鸸鸹鸺鸻鸼鸽鸾鸿鹀鹁鹂鹃鹄鹅鹆鹈鹉鹊鹋鹌鹍鹎鹏鹐鹑鹒鹓鹔鹕鹖鹗鹘鹙鹚鹛鹜鹝鹞鹟鹠鹡鹢鹣鹤鹥鹦鹧鹨鹩鹪鹫鹬鹭鹯鹰鹱鹲鹳鹴鹾麦麸麹麺麽黄黉黡黩黪黾鼋鼌鼍鼹齐齑齿龀龁龂龃龄龅龆龇龈龉龊龋龌龙龚龛龟鿒鿔";
+  var _TU="與專業叢東絲丟兩嚴喪臨爲麗舉麼義烏樂喬習鄉書買亂爭虧亞產畝親褻嚲億僅從倉儀們衆優會傴傘偉傳俥俔傷倀倫傖僞佇體僉俠侶僥偵側僑儈儕儂儘俁儔儼倆儷倈儉債傾傯僂僨償儎儻儐儲儺兒兌兗蘭關興茲養獸囅內岡冊寫軍農馮決況凍淨涼減湊凜鳳鳧憑凱擊鑿芻劉則剛創刪剗剄剎劊劌剴劑剮劍剝劇勸辦務勱動勵勁勞勢勩勻匭匱區醫華協單賣盧臥衛卻巹廳厲壓厭厙龎廁廂厴廈廚廄廝縣叄靉靆雙變敘疊號嘰嚇呂嗎噸聽啓吳吶嘸囈嘔嚦唄員咼嗆嗚詠嚨嚀噝吒響啞噠嘵嗶噦噲嚌噥喲嘜嗊嘮啢嗩喚嘖嗇囀嘓囉嘽嘯噴嘍嚳囁噯噓嚶囑嚕囂園囪圍圇國圖圓聖壙場壞塊堅壢塢墳墜壟壠壚壘墾堊墊埡墶壋塏堖塒堝塹墮壪牆壯聲殼壺壼處備夠頭奪奩奐奮獎奧妝婦媽嫵嫗嬀姍奼婁婭嬈嬌孌娛媧嫿嬰嬋嬸媼嬃嬡嬪嬙嬤孫學孿寶實寵審憲宮寬賓寢對尋導壽將爾塵堯尷層屓屜屆屬屢屨嶼歲豈嶇崗峴嵐島嶺崬巋嶨嶧峽嶢嶠崢巒峯嶗崍嶮嶄嶸嶔嶁巔鞏巰幣帥師幃帳幟帶幀幫幬幘幗冪莊慶牀廬廡庫應廟龐廢廎廩開異棄弒張弳彎彈強歸彠彥彲徹徠憶懺憂愾懷態慫憮慪悵愴憐總懟懌戀恆懇慟懨愷惻惱惲悅愨懸慳悞憫驚懼慘懲憊愜慚憚慣慍憤憒懾憖懣懶懍戇戔戲戧戰戩戱戶撲執擴捫掃揚擾撫拋摶摳掄搶護報擔擬攏揀擁攔擰撥擇摯攣掗撾撻挾撓擋撟掙擠揮撏挩撈損撿換搗擄摑擲撣摻摜攬搵撳攙擱摟揯攪攜攝攄搖擯攤攖撐攆擷擼攛擻攢敵敓斂斆數齋斕斬斷無舊時曠暘曇暱晝曨顯晉曬曉曄暈暉暫曖機殺雜權條來楊榪構樅樞棗櫪梘棖楓梟檸檉梔柵標棧櫛櫳棟櫨櫟欄樹棲樣欒椏橈楨檔榿橋樺檜槳樁樳夢檮棶槤檢梲欞槨槼櫝槧槶欏樿橢槮樓欖榲櫬櫚櫸樧檟檻檳櫧橫檣櫻櫫櫥櫓櫞檁歡歟歐殲歿殤殘殞殮殫殯毆轂畢斃氈毿氌氣氫氬氳漢湯洶澐溝沒灃漚瀝淪滄渢潙滬濘淚澩瀧瀘濼瀉潑澤涇潔灑窪浹淺漿澆湞溮濁測澮濟瀏滻渾滸濃潯濜涗濤澇淶漣潿渦溳渙滌潤澗漲澀淵淥漬瀆漸澠漁瀋滲溫灣溼濚潰濺漵漊潷滾滯灄滿瀅濾濫灤濱灘澦瀠瀟瀲濰潛瀦瀂瀾瀨瀕灝滅燈靈竈災燦煬爐燉煒熗點熾爍爛烴燭煩燒燁燴燙燼熱煥燜燾熅愛爺牘犛牽犧犢狀獷獁猶狽獮獰獨狹獅獪猙獄猻獫獵獼玀豬貓蝟獻獺璣璵瑒瑪瑋環現瑲璽琺瓏璫琿璡璉瑣瓊瑤璦璸瓔瓚甕甌電畫暢疇癤療瘧癘瘍癧瘲瘡瘋皰痾癰痙癢瘂癆瘓癇癡癉瘮瘞瘻癟癱癮癭癩癬癲皚皺皸盞鹽監蓋盜盤瞘眥矓睜睞瞼瞶瞞矚矯磯礬礦碭碼磚硨硯碸礪礱礫礎硜碩硤磽磑礄磠礙磧磣鹼禮禡禕禰禎禱禍稟祿禪離禿稈祕積稱穢穠穭稅穌穩穡穭窮竊竅窵窯竄窩窺竇窶豎競篤筍筆筧箋籠籩篳篩簹箏籌篔篠簡籙簀篋籜籮簞簫簣簍籃籛籬籪籟糴類秈糶糲粵糞糧糉糝餱餈緊縶縕緪糹糾紆紅紂紇約級紈纊紀紉緯紜紘純紕紗綱納紝縱綸紛紙紋紡紵紖紐紓線紺紲紱練組紳細織終縐絆紼絀紹繹經紿綁絨結絝繞絰絎繪給絢絳絡絕絞統綆綃絹繡綌綏絛繼綈績緒綾緓續綺緋綽緄繩維綿綬綢綯綹綣綜綻綰綠綴緇緙緗緘緬纜緹緲緝縕繢緦綞緞緶線緱縋緩締縷編緡緣縉縛縟縝縫縗縞纏縭縊縑繽縹縵縲纓縮繆繅纈繚繕繒繮繾繰繯繳纘罌網羅罰罷羆羈羥羨羣翹翽翬耮耬聳恥聶聾職聹聯聵聰肅腸膚骯餚腎腫脹脅膽朧腖臚脛膠脈膾臍腦膿臠腳脫腡臉膕齶膩靦膃騰臏臢輿艤艦艙艫艱藝節羋薌蕪蘆蓯葦藶莧萇蒼苧薴莖蘢蔦塋煢繭荊薘莢蕘蓽萴蕎薈薺榮葷滎犖熒蕁藎蓀蕒葒葤蒞萊蓮蒔萵薟蕕瑩鶯蓴蘀蘿螢營縈蕭薩蔥蒕蕆蕢蔣蔞醟藍薊蘺蕷鎣驀虆薔蘞藺藹薀蘄蘊藪蘚蘊櫱虜慮虛虯蟣蝨雖蝦蠆蝕蟻螞蠁蠶蜆蠱蠣蟶蠻蟄蛺蟯螄蠐蛻蝸蠅蟈蟬螻蠑螿蟎蠨釁銜補襯袞襖褘襪襲襏裝襠褌褳襝褲褸襤襴見觀覎規覓視覘覽覺覬覡覿覥覦覯覲覷觴觸觶誾讋譽謄訁計訂訃認譏訐訌討讓訕訖託訓議訊記訒講諱謳詎訝訥許訛論訩訟諷設訪訣詁訶評詛識詗詐訴診詆謅詞詘詔詖譯詒誆誄試詿詩詰詼誠誅詵話誕詬詮詭詢詣諍該詳詫諢詡譸誡誣語誚誤誥誘誨誑說誦誒請諸諏諾讀諑誹課諉諛誰諗調諂諒諄誶談讅誼謀諶諜謊諫諧謔謁謂諤諭諼讒諮諳諺諦謎諞諝謨讜謖謝謠謗謙謐謹謾謫譾謬譚譖譙讕譜譎讞譴譫讖豶貝貞負貟貢財責賢敗賬貨質販貪貧貶購貯貫貳賤賁貰貼貴貺貸貿費賀貽賊贄賈賄貲賃賂贓資賅贐賕賑賚賒賦賭齎贖賞賜贔賙賡賠賧賴賵贅賻賺賽賾贇贈贍贏贛赬趙趕趨趲躉躍蹌躒踐躂蹺蹕躚躋躊蹤躓躑躡蹣躕躥躪躦軀轀車軋軌軒軑軔轉軛輪軟轟軲軻轤軸軹軼軤軫轢軺輕軾載輊轎輈輇輅較輒輔輛輦輩輝輥輞輬輟輜輳輻輯轀輸轡轅轄輾轆轍轔辭辯辮邊遼達遷過邁運還這進遠違連遲邇逕選遜遞邐邏遺遙鄧鄺鄔郵鄒鄴鄰郟鄶鄭鄆酈鄖鄲酇醞醱醬釅釃釀醞釋鑾鏨釒釓釔釘釗釙釕釷釺釧釤鈒釩釣鍆釹鍚釵鈃鈣鈈鈦鉅鈍鈔鈉鋇鋼鈑鈐欽鈞鎢鉤鈧鈥鈄鈕鈀鈺錢鉦鉗鈷鉢鈳鉕鈽鈸鉞鉬鉭鉀鈿鈾鐵鉑鈴鑠鉛鉚鉋鈰鉉鉈鉍鈮鈹鐸鉶銬銠鉺鋩錏銪鋮鋏鋣鐃銍鐺銅鋁銱銦鎧鍘銖銑鋌銩銛鏵銓鎩鉿銚鉻銘錚銫鉸銥銃鐋銨銀銣鑄鐒鋪鋙錸鋱鏗銷鎖鋰鋥鍋鋯鋨鏽銼鋝鋒鋅鋶鐦鐧銳銻鋃鋟鋦錒錆鍺鍩錯錨錛錡鍀錁錕錩錫錮鑼錘錐錦鑕鍁錈鍃錟錠鍵鋸錳錙鍥鍈鍇鏘鍶鍔鍤鍬鍾鍛鎪鍠鍰鎄鍍鎂鏤鎡鐨鎇鏌鎮鎛鎘鑷鐫鎳鎦鎬鎊鎰鎵鑌鎔鏢鏜鏝鏍鏰鏞鏡鏑鏃鏇鏐鐔鐐鏷鑥鐓鑭鐠鑹鏹鐙鑊鐳鐶鐲鐿鑔鑣鑞鑱鑲長門閂閃閆閈閉問闖閏闈閎間閔閌悶閘鬧閨聞闥閩閭闓閥閣閡閫鬮閱閬闍閾閹閶鬩閿閽閻閼闡闌闃闠闊闋闔闐闒闕闞闤隊陽陰陣階際陸隴陳陘陝隯隉隕險隨隱隸雋難雛讎靂霧霽黴霢靄靚靝靜靨韃鞽韉韝韋韌韍韓韙韞韜韻頁頂頃頇項順頊頑顧頓頎頒頌頏預顱領頗頸頡頰頲頜潁熲頦頤頻頮頹頷頴穎顆題顒顎顓顏額顳顢顛顙顥纇顫顬顰顴風颺颭颮颯颶颸颼颻飀飄飆飈飛饗饜飠飣飥餳飩餼飪飫飭飯飲餞飾飽飼飿飴餌饒餉餄餎餃餏餅餑餖餓餘餒餕餜餛餡館餷饋餶餿饞饁饃餺餾饈饉饅饊饌饢馬馭馱馴馳驅馹駁驢駔駛駟駙駒騶駐駝駑駕驛駘驍罵駰驕驊駱駭駢驫驪騁驗騂駸駿騏騎騍騅騌驌驂騙騭騤騷騖驁騮騫騸驃騾驄驏驟驥驦驤髏髖髕鬢鬹魘魎魚魛魢魷魨魯魴魺鮁鮃鮎鱸鮋鮓鮒鮊鮑鱟鮍鮐鮭鮚鮳鮪鮞鮦鰂鮜鱠鱭鮫鮮鮺鯗鱘鯁鱺鰱鰹鯉鰣鰷鯀鯊鯇鮶鯽鯒鯖鯪鯕鯫鯡鯤鯧鯝鯢鯰鯛鯨鰺鯴鯔鱝鰈鰏鱨鯷鰮鰃鰓鱷鰍鰒鰉鰁鱂鯿鰠鰲鰭鰨鰥鰩鰟鰜鰳鰾鱈鱉鰻鰵鱅鰼鱖鱔鱗鱒鱯鱤鱧鱣鳥鳩雞鳶鳴鳲鷗鴉鶬鴇鴆鴣鶇鸕鴨鴞鴦鴒鴟鴝鴛鷽鴕鷥鷙鴯鴰鵂鴴鵃鴿鸞鴻鵐鵓鸝鵑鵠鵝鵒鵜鵡鵲鶓鵪鵾鵯鵬鵮鶉鶊鵷鷫鶘鶡鶚鶻鶖鷀鶥鶩鷊鷂鶲鶹鶺鷁鶼鶴鷖鸚鷓鷚鷯鷦鷲鷸鷺鸇鷹鸌鸏鸛鸘鹺麥麩麴麪麼黃黌黶黷黲黽黿鼂鼉鼴齊齏齒齔齕齗齟齡齙齠齜齦齬齪齲齷龍龔龕龜鿓鎶";
+  var _AMB="万丑个丰了于云亘仆仇仑价仿伙余佛佣俊修借僵克党具冢冬冲凄准凌几凶出划别刮制勋千升卜占卤卷厂历厘参发只台叶叹吁吃合吊同后向吣呆周咨咸咽哄哗唇啮喂噪回团困坐坛坝坯埙堤复夫夸夹奸姜娘娴宁它家尝尸尽局岩岳巨布帘席干并幸广庵弥弦当录彩征径御志念恤恶愈愿戚扇才扎托扣折抵拐拿挂挨挽捆捍据搜摆斗斤斫旋昆暗曲札术朱朴杆杠杯杰松板极果枪柜栗核梁棱檗欲毁汇沈沾泛注浚涂涌淀游溪滟漓澄炼烟焰熏狸玩琅璇症皂矩确硷私秋种穗筑筱签糊系累纤绱绷耇胄背胜胡脏腊腌膻致舍艳芸苏苔苹范荐荡荫药获蒙蔑藤虫蚝蜡蝎表袅裥证谥谷豆象赝赞跖辟迹适郁酸采里鉴针钟钥钫钻铲链锄锫镋镎镢镰闲雇雕面须饥鹇";
+  for(var _i=0;_i<_SU.length;_i++)S2T_MAP[_SU[_i]]=_TU[_i];
+  /* 舊表殘留條目：只在 OpenCC 沒收錄且不在歧義集時保留 */
+  for(var _j=0;_j<_AMB.length;_j++)delete S2T_MAP[_AMB[_j]];
+  /* 原表缺字補充 */
+  var _fix={"题":"題"};for(var _k in _fix)if(!S2T_MAP[_k])S2T_MAP[_k]=_fix[_k];
+  if(!S2T_MAP["并"])S2T_MAP["并"]="並";
+  if(!S2T_MAP["发"])S2T_MAP["发"]="發";
+  /* OpenCC 把這兩個列為一對多，但首選壓倒性（个→個，箇已不用；涌→湧，涌罕用），給預設比不轉好 */
+  if(!S2T_MAP["个"])S2T_MAP["个"]="個";
+  if(!S2T_MAP["涌"])S2T_MAP["涌"]="湧";
+  /* 一簡對多繁只能靠詞組判斷（并→並/併、周→週/周、复→複/復/覆、里→裡/里…），
+     長詞優先，接在原表後面 */
+  /* 只 當量詞時一律是「隻」，這些組合沒歧義 */
+  try{S2T_PHRASE=S2T_PHRASE.concat([["一只","一隻"],["两只","兩隻"],["三只","三隻"],["几只","幾隻"],["这只","這隻"],["那只","那隻"],["每只","每隻"],["只身","隻身"],["只影","隻影"]]);}catch(e){}
+  /* 2026-08-21補：上面從單字表移除的 14 個字，真正需要轉的情形靠這些詞組 */
+  try{S2T_PHRASE=S2T_PHRASE.concat([["制作","製作"],
+    ["制造","製造"],
+    ["制品","製品"],
+    ["制程","製程"],
+    ["制藥","製藥"],
+    ["制冷","製冷"],
+    ["复制","複製"],
+    ["录制","錄製"],
+    ["印制","印製"],
+    ["定制","定製"],
+    ["研制","研製"],
+    ["编制","編製"],
+    ["精制","精製"],
+    ["照制","照製"],
+    ["以后","以後"],
+    ["然后","然後"],
+    ["最后","最後"],
+    ["之后","之後"],
+    ["后来","後來"],
+    ["后面","後面"],
+    ["背后","背後"],
+    ["今后","今後"],
+    ["随后","隨後"],
+    ["前后","前後"],
+    ["后果","後果"],
+    ["落后","落後"],
+    ["幕后","幕後"],
+    ["后期","後期"],
+    ["后续","後續"],
+    ["稍后","稍後"],
+    ["事后","事後"],
+    ["后半","後半"],
+    ["后退","後退"],
+    ["先后","先後"],
+    ["轻松","輕鬆"],
+    ["放松","放鬆"],
+    ["松开","鬆開"],
+    ["松散","鬆散"],
+    ["松动","鬆動"],
+    ["蛬松","蜻鬆"],
+    ["台风","颱風"],
+    ["柜台","櫃檯"],
+    ["写字台","寫字檯"],
+    ["台灯","檯燈"],
+    ["战斗","戰鬥"],
+    ["奋斗","奮鬥"],
+    ["斗争","鬥爭"],
+    ["斗志","鬥志"],
+    ["决斗","決鬥"],
+    ["格斗","格鬥"],
+    ["计划","計劃"],
+    ["划分","劃分"],
+    ["规划","規劃"],
+    ["策划","策劃"],
+    ["划定","劃定"],
+    ["笔划","筆劃"],
+    ["其余","其餘"],
+    ["剩余","剩餘"],
+    ["余额","餘額"],
+    ["多余","多餘"],
+    ["余地","餘地"],
+    ["业余","業餘"],
+    ["范围","範圍"],
+    ["规范","規範"],
+    ["示范","示範"],
+    ["模范","模範"],
+    ["典范","典範"],
+    ["师范","師範"],
+    ["伙伴","夥伴"],
+    ["合伙","合夥"],
+    ["大伙","大夥"],
+    ["生姜","生薑"],
+    ["姜黄","薑黃"],
+    ["姜汁","薑汁"],
+    ["卷起","捲起"],
+    ["卷入","捲入"],
+    ["席卷","席捲"],
+    ["胶卷","膠捲"],
+    ["卷尾","捲尾"],
+    ["卷发夹","捲髮夾"],
+    ["佣人","傭人"],
+    ["雇佣","僱傭"],
+    ["女佣","女傭"],
+    ["忧郁","憂鬱"],
+    ["抑郁","抑鬱"],
+    ["郁闷","鬱悶"],
+    ["阴郁","陰鬱"],
+    ["准备","準備"],
+    ["标准","標準"],
+    ["准确","準確"],
+    ["准时","準時"],
+    ["精准","精準"],
+    ["水准","水準"],
+    ["准则","準則"],
+    ["基准","基準"],
+    ["瞴准","矄準"]]);}catch(e){}
+  try{S2T_PHRASE=S2T_PHRASE.concat([["并且","並且"],["并不","並不"],["并没","並沒"],["并非","並非"],["并列","並列"],["并存","並存"],["并排","並排"],["并肩","並肩"],["合并","合併"],["兼并","兼併"],["并购","併購"],["并发","併發"],["下周","下週"],["上周","上週"],["本周","本週"],["每周","每週"],["一周","一週"],["两周","兩週"],["周末","週末"],["周期","週期"],["周年","週年"],["周报","週報"],["周边","周邊"],["周围","周圍"],["头发","頭髮"],["发型","髮型"],["理发","理髮"],["长发","長髮"],["短发","短髮"],["干燥","乾燥"],["干净","乾淨"],["干杯","乾杯"],["饼干","餅乾"],["干脆","乾脆"],["干粮","乾糧"],["主干","主幹"],["骨干","骨幹"],["干部","幹部"],["能干","能幹"],["干劲","幹勁"],["复习","複習"],["重复","重複"],["复杂","複雜"],["复制","複製"],["复印","複印"],["复数","複數"],["恢复","恢復"],["回复","回覆"],["答复","答覆"],["复原","復原"],["康复","康復"],["报复","報復"],["面条","麵條"],["面粉","麵粉"],["面包","麵包"],["泡面","泡麵"],["拉面","拉麵"],["心里","心裡"],["手里","手裡"],["家里","家裡"],["里头","裡頭"],["里边","裡邊"],["嘴里","嘴裡"],["眼里","眼裡"],["记里","記裡"],["本里","本裡"],["制作","製作"],["制造","製造"],["制品","製品"],["制程","製程"],["印制","印製"],["录制","錄製"],["轻松","輕鬆"],["放松","放鬆"],["宽松","寬鬆"],["松弛","鬆弛"],["后面","後面"],["以后","以後"],["然后","然後"],["最后","最後"],["之后","之後"],["后来","後來"],["背后","背後"],["落后","落後"],["前后","前後"],["今后","今後"],["随后","隨後"],["采访","採訪"],["采购","採購"],["采用","採用"],["采取","採取"],["开采","開採"],["丑陋","醜陋"],["出丑","出醜"],["范围","範圍"],["模范","模範"],["规范","規範"],["系统","系統"],["联系","聯繫"],["关系","關係"],["系列","系列"],["准备","準備"],["标准","標準"],["准时","準時"],["准确","準確"],["历史","歷史"],["日历","日曆"],["台历","檯曆"]]);}catch(e){}}
+function hasSimplified(s){
+  s2tInit();
+  for(var i=0;i<s.length;i++)if(S2T_MAP[s[i]])return true;
+  return false;}
+function s2t(s){
+  s2tInit();
+  s=String(s||'');
+  S2T_PHRASE.forEach(function(p){
+    if(s.indexOf(p[0])<0)return;
+    try{s=s.split(p[0]).join(p[1]);}catch(e){}});
+  var out='';
+  for(var i=0;i<s.length;i++){var c=s[i];out+=(S2T_MAP[c]||c);}
+  return out;}
+
+/* ---- 接線：顯示層自動轉繁，不動原始資料 ---- */
+var _s2tOn=true; try{var _so=localStorage.getItem('shr_s2t'); if(_so!==null)_s2tOn=(_so==='1');}catch(e){}
+function s2tEnabled(){return _s2tOn;}
+function toggleS2T(){
+  _s2tOn=!_s2tOn; try{localStorage.setItem('shr_s2t',_s2tOn?'1':'0');}catch(e){}
+  try{renderFeed();}catch(e){}
+  toast(_s2tOn?'簡體貼文會自動顯示為繁體':'已關閉自動轉繁，依原文顯示');}
+(function(){var base=renderRich;
+  window.renderRich=function(raw){
+    if(_s2tOn&&raw&&hasSimplified(raw)){try{raw=s2t(raw);}catch(e){}}
+    return base(raw);};})();
+/* 教師管理面板加開關 */
+(function(){var base=openTeach;
+  window.openTeach=function(){base();
+    var t=document.getElementById('teachTools'); if(!t||document.getElementById('s2tBtn'))return;
+    var b=document.createElement('button'); b.className='tbtn'; b.id='s2tBtn';
+    b.onclick=function(){toggleS2T();b.innerHTML=s2tLabel();};
+    b.innerHTML=s2tLabel(); t.appendChild(b);};
+  window.s2tLabel=function(){return '<svg class="ic" fill="none"><use href="#ic-type"/></svg> 簡體自動轉繁：'+(_s2tOn?'開':'關');};})();
+</script>
+
+<script>
+/* 版型模板庫：畫布工具列入口 */
+(function(){
+  function add(){
+    var g=document.getElementById('dNavGroup');
+    if(!g||document.getElementById('dTplLib'))return;
+    var anchor=document.getElementById('dCardTpl')||null;
+    var b=document.createElement('button');b.className='dtool';b.id='dTplLib';
+    b.innerHTML='<svg class="ic" fill="none"><use href="#ic-grid"/></svg> 版型';
+    b.title='版型模板庫：心智圖／康乃爾筆記／SWOT／九宮格／KWL／魚骨圖';
+    b.onclick=openTplLib;
+    if(anchor)g.insertBefore(b,anchor);else g.appendChild(b);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',add);else add();
+})();
+</script>
+<script>
+/* =========================================================
+   v7.7-A / v7.9 / v8.0 移植 — 即時字幕（浮動視窗）
+
+   來源三個區塊在 v9.6 是 append-only 疊三層（後定義覆寫前定義），
+   這裡直接寫成最終版：v7.9 的 display:important 修正與 v8.0 的
+   辨識語言選擇都併進來，不留死碼。
+
+   刻意不移植「字幕翻譯」：原版打 translate.googleapis.com 的
+   translate_a/single 未公開端點，無金鑰、無使用條款、隨時可能被擋，
+   與先前拒收「提示詞中翻英」同一理由。字幕本體不受影響。
+
+   一個老師需要知道的事實：Chrome／Edge 的 Web Speech API 會把麥克風
+   音訊傳到瀏覽器廠商的伺服器辨識，不是在本機跑。這是該 API 的固有行為，
+   無法經由本專案選掉；收錄的是老師自己的麥克風、且要手動按「開始聽寫」才啟動，
+   所以定位為「已告知的選用功能」，而非默默上傳。UI 上也寫明。
+   ========================================================= */
+var CAP_SRC_LANGS=[['zh-TW','中文（台灣）'],['zh-CN','中文（普通話）'],['en-US','English'],
+  ['ja-JP','日本語'],['ko-KR','한국어'],['vi-VN','Tiếng Việt'],['id-ID','Bahasa Indonesia'],
+  ['th-TH','ไทย'],['es-ES','Español'],['fr-FR','Français']];
+var capRecog=null,capOn=false,capLog=[],capCfg={fs:26,op:80,src:'zh-TW'};
+try{var _cc=localStorage.getItem('shr_cap');if(_cc)capCfg=JSON.parse(_cc);}catch(e){}
+if(!capCfg.src)capCfg.src='zh-TW';
+if(!capCfg.fs)capCfg.fs=26;
+if(!capCfg.op)capCfg.op=80;
+function capSave(){try{localStorage.setItem('shr_cap',JSON.stringify(capCfg));}catch(e){}}
+function capSupported(){return !!(window.SpeechRecognition||window.webkitSpeechRecognition);}
+
+/* .cap-win 的 CSS 是 display:none，只清行內樣式會退回 none，所以要 important */
+function capWinShow(){var w=$('capWin');if(!w)return;w.style.setProperty('display','block','important');}
+function closeCapWin(){var w=$('capWin');if(w)w.style.setProperty('display','none','important');}
+function openCap(){
+  buildCapWin();capWinShow();applyCapStyle();renderCapCtrl();
+  if(!isHost&&!capOn)toast('等待老師開始聽寫…');}
+
+function buildCapWin(){
+  if($('capWin'))return;
+  var w=document.createElement('div');w.id='capWin';w.className='cap-win';
+  w.innerHTML='<div class="cap-h" id="capDrag"><svg class="ic" fill="none"><use href="#ic-micvocal"/></svg> <b>即時字幕</b>'+
+    '<span class="cap-sp" id="capState"></span>'+
+    '<button class="cap-b" onclick="capFont(-2)" title="縮小字級">A−</button>'+
+    '<button class="cap-b" onclick="capFont(2)" title="放大字級">A＋</button>'+
+    '<button class="cap-b" onclick="capOpacity()" title="調整背景透明度">◐</button>'+
+    '<button class="cap-b" onclick="capClear()" title="清空字幕">清空</button>'+
+    '<button class="cap-b" onclick="closeCapWin()" title="關閉">✕</button></div>'+
+    '<div class="cap-body" id="capBody"></div>'+
+    '<div class="cap-ctrl" id="capCtrl"></div>';
+  document.body.appendChild(w);
+  var d=$('capDrag'),drag=null;
+  d.addEventListener('pointerdown',function(e){
+    if(e.target.tagName==='BUTTON'||(e.target.closest&&e.target.closest('button')))return;
+    drag={x:e.clientX,y:e.clientY,l:w.offsetLeft,t:w.offsetTop};
+    d.setPointerCapture&&d.setPointerCapture(e.pointerId);});
+  d.addEventListener('pointermove',function(e){
+    if(!drag)return;
+    w.style.left=Math.max(0,Math.min(window.innerWidth-120,drag.l+e.clientX-drag.x))+'px';
+    w.style.top=Math.max(0,Math.min(window.innerHeight-60,drag.t+e.clientY-drag.y))+'px';
+    w.style.right='auto';w.style.bottom='auto';});
+  d.addEventListener('pointerup',function(){drag=null;});}
+
+function applyCapStyle(){
+  var w=$('capWin');if(!w)return;
+  var b=$('capBody');if(b)b.style.fontSize=capCfg.fs+'px';
+  w.style.setProperty('--capbg','rgba(12,14,20,'+(capCfg.op/100)+')');}
+function capFont(d){capCfg.fs=Math.max(14,Math.min(56,(capCfg.fs||26)+d));capSave();applyCapStyle();}
+function capOpacity(){capCfg.op=(capCfg.op>=95)?40:(capCfg.op+20);capSave();applyCapStyle();}
+function capClear(){capLog=[];var b=$('capBody');if(b)b.innerHTML='';}
+
+function setCapSrc(v){
+  capCfg.src=v;capSave();
+  if(isHost){
+    hostBroadcast({t:'capsrc',src:v});
+    if(capOn){stopCap();setTimeout(toggleCap,300);toast('辨識語言已改為 '+v+'，重新啟動中…');}
+    else toast('辨識語言：'+v);}}
+
+function renderCapCtrl(){
+  var c=$('capCtrl');if(!c)return;
+  var h='';
+  if(isHost){
+    h+='<div class="cap-row"><label>老師講的語言</label><select onchange="setCapSrc(this.value)">'+
+       CAP_SRC_LANGS.map(function(a){
+         return '<option value="'+a[0]+'"'+(capCfg.src===a[0]?' selected':'')+'>'+a[1]+'</option>';}).join('')+
+       '</select></div>';
+    h+='<div class="cap-row">'+
+       '<button class="cap-go'+(capOn?' on':'')+'" onclick="toggleCap()">'+(capOn?'■ 停止聽寫':'開始聽寫')+'</button>'+
+       '<button class="cap-b2" onclick="capPost()">貼到牆上</button>'+
+       '<button class="cap-b2" onclick="capExport()">匯出逐字稿</button></div>';
+    h+='<div class="cap-row">'+
+       '<button class="cap-b2 wh-entry" onclick="openWhisper()">音檔轉字幕</button>'+
+       '<button class="cap-b2" onclick="capToTC()">一鍵轉繁體</button></div>'+
+       '<div class="cap-row"><span class="cap-hint">播放教材或錄音檔請用「音檔轉字幕」，準確度遠勝麥克風。'+
+       '即時聽寫使用瀏覽器內建語音辨識，麥克風音訊會傳至瀏覽器廠商伺服器處理。</span></div>';}
+  else{
+    h+='<div class="cap-row"><span class="cap-hint">'+
+       (capOn?'老師正在講課，字幕即時顯示中':'老師尚未開始聽寫')+
+       '　·　原文語言：'+esc(capCfg.src||'zh-TW')+'</span></div>';}
+  c.innerHTML=h;}
+
+function toggleCap(){
+  if(!isHost)return;
+  if(capOn){stopCap();return;}
+  if(!capSupported()){toast('此瀏覽器不支援語音辨識（建議用 Chrome／Edge）');return;}
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  capRecog=new SR();
+  capRecog.lang=capCfg.src||'zh-TW';
+  capRecog.continuous=true;capRecog.interimResults=true;
+  capRecog.onresult=function(e){
+    var fin='',intr='';
+    for(var i=e.resultIndex;i<e.results.length;i++){
+      var r=e.results[i];
+      if(r.isFinal)fin+=r[0].transcript;else intr+=r[0].transcript;}
+    if(fin){pushCap(fin.trim(),true);hostBroadcast({t:'cap',line:fin.trim(),final:true});}
+    if(intr){showInterim(intr);hostBroadcast({t:'cap',line:intr,final:false});}};
+  capRecog.onerror=function(ev){
+    if(ev&&ev.error==='not-allowed'){toast('未取得麥克風權限');stopCap();}
+    else if(ev&&ev.error==='language-not-supported'){toast('此瀏覽器不支援該辨識語言，請改選其他語言');stopCap();}};
+  capRecog.onend=function(){if(capOn){try{capRecog.start();}catch(e){}}};
+  try{capRecog.start();}catch(e){toast('無法啟動語音辨識');return;}
+  capOn=true;openCap();renderCapCtrl();
+  var st=$('capState');if(st)st.textContent='● 收音中';
+  hostBroadcast({t:'capon',src:capCfg.src});
+  notice('已開始即時字幕（'+capCfg.src+'）');}
+function stopCap(){
+  capOn=false;
+  try{capRecog&&capRecog.stop();}catch(e){}
+  capRecog=null;renderCapCtrl();
+  var st=$('capState');if(st)st.textContent='';
+  if(isHost)hostBroadcast({t:'capoff'});
+  notice('已停止即時字幕');}
+
+function showInterim(t){
+  buildCapWin();var b=$('capBody');if(!b)return;
+  capWinShow();
+  var el=b.querySelector('.cap-interim');
+  if(!el){el=document.createElement('div');el.className='cap-line cap-interim';b.appendChild(el);}
+  el.textContent=t;b.scrollTop=b.scrollHeight;}
+function pushCap(text,final){
+  if(!text)return;
+  buildCapWin();applyCapStyle();capWinShow();
+  var b=$('capBody');if(!b)return;
+  var iv=b.querySelector('.cap-interim');if(iv&&iv.parentNode)iv.parentNode.removeChild(iv);
+  if(typeof _s2tOn!=='undefined'&&_s2tOn&&typeof hasSimplified==='function'&&hasSimplified(text)){
+    try{text=s2t(text);}catch(e){}}
+  capLog.push({ts:nowHM(),text:text});
+  if(capLog.length>400)capLog.shift();
+  var d=document.createElement('div');d.className='cap-line';
+  d.innerHTML='<div class="cap-src"><span class="cap-t">'+esc(nowHM())+'</span>'+esc(text)+'</div>';
+  b.appendChild(d);
+  while(b.children.length>60)b.removeChild(b.firstChild);
+  b.scrollTop=b.scrollHeight;}
+/* 辨識結果吐出簡體時，整段轉繁 */
+function capToTC(){
+  if(typeof s2t!=='function'){toast('轉換元件未載入');return;}
+  var n=0;
+  [].forEach.call(document.querySelectorAll('#capBody .cap-src'),function(el){
+    var t=el.textContent||'';
+    if(!hasSimplified(t))return;
+    var meta=el.querySelector('.cap-t');
+    var body=t.replace(meta?meta.textContent:'','');
+    el.innerHTML=(meta?meta.outerHTML:'')+esc(s2t(body));n++;});
+  capLog.forEach(function(x){if(hasSimplified(x.text))x.text=s2t(x.text);});
+  toast(n?('已把 '+n+' 句轉成繁體中文'):'目前沒有偵測到簡體字');}
+function capPost(){
+  if(!isHost||!capLog.length){toast('目前沒有字幕內容');return;}
+  var txt=capLog.slice(-120).map(function(x){return x.ts+'　'+x.text;}).join('\n');
+  var post={id:uid(),uid:myId,name:myName,ts:nowHM(),type:'text',subject:'課堂逐字稿',
+    text:txt.slice(0,4000),color:'#eef4ff',reactions:{},comments:[]};
+  feed.unshift(post);addPostEl(post);hostBroadcast({t:'post',post:sanitizePost(post)});saveSession();
+  toast('逐字稿已貼到牆上');}
+function capExport(){
+  if(!capLog.length){toast('目前沒有字幕內容');return;}
+  var txt=capLog.map(function(x){return x.ts+'\t'+x.text;}).join('\r\n');
+  dl('課堂逐字稿_'+safeName(roomName)+'_'+_stamp()+'.txt',
+    new Blob(['﻿'+txt],{type:'text/plain;charset=utf-8'}));
+  toast('已匯出逐字稿');}
+
+/* 訊息掛鉤 */
+(function(){var gx=guestHandleX;
+  window.guestHandleX=function(o){
+    if(o.t==='cap'){if(o.final)pushCap(o.line,true);else showInterim(o.line);return true;}
+    if(o.t==='capsrc'){capCfg.src=o.src||'zh-TW';capSave();
+      if($('capWin'))renderCapCtrl();return true;}
+    if(o.t==='capon'){if(o.src)capCfg.src=o.src;capOn=true;openCap();renderCapCtrl();
+      notice('老師開啟了即時字幕');return true;}
+    if(o.t==='capoff'){capOn=false;renderCapCtrl();
+      var st=$('capState');if(st)st.textContent='';return true;}
+    return gx(o);};})();
+/* 遲到的學員也要知道字幕已開（否則整堂看不到） */
+(function(){var base=sendInit;
+  window.sendInit=function(c){base(c);
+    if(capOn)tSend(c,{t:'capon',src:capCfg.src});};})();
+</script>
+
+<script>
+/* =========================================================
+   v8.6 / v8.8 移植 — 音檔轉字幕（Groq Whisper）
+
+   不經麥克風，直接把檔案送 Groq 轉錄，所以播放教材、手機錄音、
+   影片音軌都能準確辨識。沿用既有的 shr_groq 金鑰，不新增金鑰來源。
+   v8.8 的繁體 prompt 引導與結果套簡繁轉換已併入，不留舊版 whRun。
+   ========================================================= */
+var WHISPER_MODELS=[
+  ['whisper-large-v3-turbo','Whisper large-v3 turbo（快・便宜・推薦）'],
+  ['whisper-large-v3','Whisper large-v3（最準・稍慢）']];
+var WH_LANGS=[['','自動偵測'],['zh','中文'],['en','English'],['ja','日本語'],['ko','한국어'],
+  ['vi','Tiếng Việt'],['id','Bahasa Indonesia'],['th','ไทย'],['es','Español'],['fr','Français']];
+var _whFile=null,_whSegs=[],_whBusy=false,_whUrl='',_whSent={},_whDetected='';
+
+function openWhisper(){
+  var m=$('whModel');
+  if(m&&!m.options.length)WHISPER_MODELS.forEach(function(a){
+    var o=document.createElement('option');o.value=a[0];o.textContent=a[1];m.appendChild(o);});
+  var l=$('whLang');
+  if(l&&!l.options.length)WH_LANGS.forEach(function(a){
+    var o=document.createElement('option');o.value=a[0];o.textContent=a[1];l.appendChild(o);});
+  var k=$('whKey');if(k&&!k.value)k.value=(typeof groqKey==='function'?groqKey():'');
+  $('whModal').classList.add('show');}
+
+function whPick(ev){
+  var f=ev.target.files&&ev.target.files[0];ev.target.value='';
+  if(!f)return;
+  var mb=f.size/1048576;
+  if(mb>24){toast('檔案 '+mb.toFixed(1)+' MB 超過 Groq 單次 25 MB 上限，請先壓縮或裁短');return;}
+  _whFile=f;_whSegs=[];_whSent={};
+  if(_whUrl){try{URL.revokeObjectURL(_whUrl);}catch(e){}}
+  _whUrl=URL.createObjectURL(f);
+  $('whInfo').innerHTML='已選擇：<b>'+esc(f.name)+'</b>　'+mb.toFixed(2)+' MB　'+esc(f.type||'');
+  $('whInfo').style.display='';
+  $('whResult').innerHTML='';}
+
+function whRun(){
+  if(_whBusy){toast('正在轉錄中');return;}
+  if(!_whFile){toast('請先選擇音檔或影片');return;}
+  /* 金鑰一律走金鑰池（groqFetch），撞到用量上限會自動換下一把。
+     欄位裡新輸入的金鑰先收進池再用。 */
+  var typed=(($('whKey')&&$('whKey').value)||'').trim();
+  if(typed&&groqPool().indexOf(typed)<0){var _p=groqPool();_p.unshift(typed);groqSavePool(_p.slice(0,3));}
+  if(!groqPool().length){toast('請先到「設定」→「AI 金鑰設定」填入 Groq API Key');return;}
+  var model=$('whModel').value||'whisper-large-v3-turbo';
+  var lang=$('whLang').value||'';
+  var toEn=$('whToEn')&&$('whToEn').checked;
+  var wantTC=$('whTC')?$('whTC').checked:true;
+  var fd=new FormData();
+  fd.append('file',_whFile,_whFile.name);
+  fd.append('model',toEn?'whisper-large-v3':model);
+  fd.append('response_format','verbose_json');
+  fd.append('temperature','0');
+  if(lang&&!toEn)fd.append('language',lang);
+  if(!toEn&&(lang===''||lang==='zh'))
+    fd.append('prompt','以下是繁體中文（台灣）的內容，請一律使用繁體中文與台灣用語輸出，例如：軟體、網路、資料、影片、伺服器。');
+  _whBusy=true;
+  var b=$('whRunBtn');if(b){b.disabled=true;b.textContent='轉錄中…';}
+  $('whResult').innerHTML='<div class="poll-empty">正在上傳並轉錄'+
+    (lang?('（指定語言：'+esc(lang)+'）'):'（自動偵測語言）')+
+    '，長度越長越久（1 分鐘音檔約 3–8 秒）…</div>';
+  groqFetch('audio/'+(toEn?'translations':'transcriptions'),fd,function(d){
+      var det=(d.language||'').toLowerCase();
+      var conv=wantTC&&!toEn&&typeof hasSimplified==='function';
+      var segs=(d.segments||[]).map(function(s){
+        var tx=String(s.text||'').trim();
+        if(conv&&hasSimplified(tx))tx=s2t(tx);
+        return {start:+s.start||0,end:+s.end||0,text:tx};})
+        .filter(function(s){return s.text;});
+      if(!segs.length&&d.text){
+        var t0=String(d.text).trim();
+        if(conv&&hasSimplified(t0))t0=s2t(t0);
+        segs=[{start:0,end:0,text:t0}];}
+      if(!segs.length)throw new Error('沒有取得任何文字');
+      _whSegs=segs;_whDetected=det;renderWhResult();
+      _whBusy=false;if(b){b.disabled=false;b.textContent='開始轉錄';}},
+    function(e){
+      $('whResult').innerHTML='<div class="poll-empty">轉錄失敗：'+esc((e&&e.message)||'')+'</div>';
+      _whBusy=false;if(b){b.disabled=false;b.textContent='開始轉錄';}},
+    true);}
+
+function whTime(t){
+  t=Math.max(0,t|0);var m=Math.floor(t/60),s=t%60;
+  return (m<10?'0':'')+m+':'+(s<10?'0':'')+s;}
+function renderWhResult(){
+  var box=$('whResult');if(!box)return;
+  var isVid=/^video\//.test((_whFile&&_whFile.type)||'');
+  var h='<div class="qz-meta">共 '+_whSegs.length+' 段・總長 '+whTime(_whSegs[_whSegs.length-1].end||0)+
+        (_whDetected?('　·　偵測語言：<b>'+esc(_whDetected)+'</b>'):'')+
+        ((($('whTC')&&$('whTC').checked)?'　·　已轉為繁體中文':''))+'</div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">'+
+     '<button class="btn btn-gold" style="flex:1 1 160px" onclick="whImportAll()">全部匯入字幕</button>'+
+     '<button class="btn btn-ghost" style="flex:1 1 160px" onclick="whExportSRT()">匯出 SRT</button>'+
+     '<button class="btn btn-ghost" style="flex:1 1 140px" onclick="whExportTxt()">匯出逐字稿</button>'+
+     (isHost?'<button class="btn btn-ghost" style="flex:1 1 140px" onclick="whPostWall()">貼到牆上</button>':'')+
+     (isHost?'<button class="btn btn-ghost wh-quiz" style="flex:1 1 160px" onclick="whToQuiz()">用逐字稿出題</button>':'')+
+     '</div>';
+  h+='<div class="qz-lab">邊播邊上字幕（播到哪，字幕就送到哪，全班同步）</div>';
+  h+=(isVid?'<video id="whPlayer" class="wh-player" controls playsinline src="'+_whUrl+'"></video>'
+           :'<audio id="whPlayer" class="wh-audio" controls src="'+_whUrl+'"></audio>');
+  h+='<div class="wh-list" id="whList">';
+  _whSegs.forEach(function(s,i){
+    h+='<div class="wh-seg" id="whSeg'+i+'" onclick="whSeek('+i+')">'+
+       '<span class="wh-t">'+whTime(s.start)+'</span>'+esc(s.text)+'</div>';});
+  h+='</div>';
+  box.innerHTML=h;
+  var p=$('whPlayer');
+  if(p){
+    p.addEventListener('timeupdate',function(){whSync(p.currentTime);});
+    p.addEventListener('play',function(){toast('播放中：字幕會依時間自動送出');});}}
+
+function whSeek(i){
+  var p=$('whPlayer');if(!p||!_whSegs[i])return;
+  try{p.currentTime=_whSegs[i].start;p.play();}catch(e){}}
+function whSync(t){
+  for(var i=0;i<_whSegs.length;i++){
+    var s=_whSegs[i];
+    if(_whSent[i])continue;
+    if(t>=s.start-0.05){
+      _whSent[i]=1;
+      var el=$('whSeg'+i);
+      if(el){
+        [].forEach.call(document.querySelectorAll('.wh-seg.on'),function(x){x.classList.remove('on');});
+        el.classList.add('on');
+        var L=$('whList');
+        if(L)L.scrollTop=Math.max(0,el.offsetTop-L.clientHeight/2);}
+      pushCap(s.text,true);
+      if(isHost)hostBroadcast({t:'cap',line:s.text,final:true});}}}
+/* 還沒送過的才送：邊播邊上字幕到一半再按「全部匯入」時，
+   原版會把已送出的段落重複推給全班。 */
+function whImportAll(){
+  if(!_whSegs.length)return;
+  var n=0;
+  _whSegs.forEach(function(s,i){
+    if(_whSent[i])return;
+    _whSent[i]=1;n++;
+    pushCap(s.text,true);
+    if(isHost)hostBroadcast({t:'cap',line:s.text,final:true});});
+  $('whModal').classList.remove('show');
+  openCap();
+  toast(n?('已匯入 '+n+' 段字幕'):'這份逐字稿已全數送出');}
+function srtTime(t){
+  t=Math.max(0,t||0);
+  var h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=Math.floor(t%60),ms=Math.round((t-Math.floor(t))*1000);
+  function p(n,l){n=String(n);while(n.length<(l||2))n='0'+n;return n;}
+  return p(h)+':'+p(m)+':'+p(s)+','+p(ms,3);}
+function whExportSRT(){
+  if(!_whSegs.length)return;
+  var out=_whSegs.map(function(s,i){
+    return (i+1)+'\r\n'+srtTime(s.start)+' --> '+srtTime(s.end||s.start+2)+'\r\n'+s.text+'\r\n';}).join('\r\n');
+  dl(safeName((_whFile&&_whFile.name)||'字幕').replace(/\.[a-z0-9]+$/i,'')+'.srt',
+    new Blob(['﻿'+out],{type:'text/plain;charset=utf-8'}));
+  toast('已匯出 SRT，可直接掛在影片上');}
+function whExportTxt(){
+  if(!_whSegs.length)return;
+  var out=_whSegs.map(function(s){return whTime(s.start)+'\t'+s.text;}).join('\r\n');
+  dl(safeName((_whFile&&_whFile.name)||'逐字稿').replace(/\.[a-z0-9]+$/i,'')+'_逐字稿.txt',
+    new Blob(['﻿'+out],{type:'text/plain;charset=utf-8'}));
+  toast('已匯出逐字稿');}
+function whPostWall(){
+  if(!isHost||!_whSegs.length)return;
+  var txt=_whSegs.map(function(s){return whTime(s.start)+'　'+s.text;}).join('\n').slice(0,4000);
+  var post={id:uid(),uid:myId,name:myName,ts:nowHM(),type:'text',
+    subject:((_whFile&&_whFile.name)||'音檔')+' 逐字稿',
+    text:txt,color:'#eef4ff',reactions:{},comments:[]};
+  feed.unshift(post);addPostEl(post);hostBroadcast({t:'post',post:sanitizePost(post)});saveSession();
+  toast('逐字稿已貼到牆上');}
+function whToQuiz(){
+  if(typeof openQuizSetup!=='function'){toast('AI 出題未載入');return;}
+  var txt=(_whSegs||[]).map(function(s){return s.text;}).join('\n').slice(0,3000);
+  if(!txt.trim()){toast('沒有逐字稿內容');return;}
+  $('whModal').classList.remove('show');
+  openQuizSetup();
+  setTimeout(function(){var q=$('qzTopic');if(q){q.value=txt;toast('已把逐字稿帶入出題範圍');}},240);}
+</script>
+
+<script>
+/* =========================================================
+   v9.4 / v9.6 移植 — OCR 文字辨識（只留 Tesseract 本機引擎）
+
+   原版有三種引擎：Gemini（v9.4）、Groq 視覺（v9.5）、Tesseract。
+   這裡只收 Tesseract：全程在瀏覽器內辨識，不需金鑰、不上傳雲端。
+   板書與講義常含學生姓名，送第三方視覺模型的隱私成本不值得換那點準度。
+   代價是首次要下載約 15 MB 語言檔，之後由瀏覽器快取。
+
+   v9.6 的「OCR 結果送 AI 出題／加入教材庫」一併收進來（直接寫在
+   renderOcrOut 裡，不用原版那種事後 querySelector 插鈕的疊法）。
+   ========================================================= */
+var OCR_LANGS=[
+ ['zh','繁體中文＋英文','chi_tra+eng'],
+ ['zhs','簡體中文＋英文','chi_sim+eng'],
+ ['en','英文','eng'],
+ ['ja','日文','jpn'],
+ ['ko','韓文','kor']];
+var _ocrFile=null,_ocrPages=[],_ocrBusy=false,_ocrText='';
+
+function openOCR(){
+  var l=$('ocrLang');
+  if(l&&!l.options.length)OCR_LANGS.forEach(function(a){
+    var o=document.createElement('option');o.value=a[0];o.textContent=a[1];l.appendChild(o);});
+  $('ocrModal').classList.add('show');}
+
+function ocrPick(ev){
+  var f=ev.target.files&&ev.target.files[0];ev.target.value='';
+  if(!f)return;
+  _ocrFile=f;_ocrPages=[];_ocrText='';
+  $('ocrOut').innerHTML='';
+  $('ocrInfo').style.display='';
+  $('ocrInfo').innerHTML='已選擇：<b>'+esc(f.name)+'</b>　'+(f.size/1048576).toFixed(2)+' MB';
+  if(/pdf$/i.test(f.name)||f.type==='application/pdf'){
+    $('ocrInfo').innerHTML+='　（PDF，將逐頁轉圖後辨識）';
+    $('ocrPageRow').style.display='';}
+  else $('ocrPageRow').style.display='none';}
+
+/* PDF → 逐頁 canvas dataURL */
+function pdfToImages(file,fromP,toP,cb,onProg){
+  loadPdfJs(function(ok){
+    if(!ok||typeof pdfjsLib==='undefined'){cb(null,'無法載入 PDF 元件（需連網）');return;}
+    var fr=new FileReader();
+    fr.onload=function(e){
+      pdfjsLib.getDocument({data:new Uint8Array(e.target.result)}).promise.then(function(pdf){
+        var a=Math.max(1,fromP||1),b=Math.min(pdf.numPages,toP||pdf.numPages);
+        var out=[],i=a;
+        function next(){
+          if(i>b){cb(out);return;}
+          onProg&&onProg('轉換第 '+i+'／'+b+' 頁…');
+          pdf.getPage(i).then(function(pg){
+            var vp=pg.getViewport({scale:1});
+            var scale=Math.min(2.2,1600/vp.width);
+            var v2=pg.getViewport({scale:scale});
+            var cv=document.createElement('canvas');
+            cv.width=Math.round(v2.width);cv.height=Math.round(v2.height);
+            return pg.render({canvasContext:cv.getContext('2d'),viewport:v2}).promise.then(function(){
+              out.push({p:i,url:cv.toDataURL('image/jpeg',0.9)});i++;next();});
+          }).catch(function(){i++;next();});}
+        next();
+      }).catch(function(){cb(null,'PDF 解析失敗');});};
+    fr.onerror=function(){cb(null,'讀取檔案失敗');};
+    fr.readAsArrayBuffer(file);});}
+
+function ocrFileToDataUrl(f,cb){
+  var r=new FileReader();r.onload=function(e){cb(e.target.result);};
+  r.onerror=function(){cb('');};r.readAsDataURL(f);}
+
+function loadTess(cb){
+  if(typeof Tesseract!=='undefined'){cb(true);return;}
+  loadScriptChain(['https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js',
+                   'https://unpkg.com/tesseract.js@5.1.0/dist/tesseract.min.js'],
+    function(){return typeof Tesseract!=='undefined';},cb);}
+function ocrTess(dataUrl,tessLang,cb,err,onProg){
+  loadTess(function(ok){
+    if(!ok){err(new Error('無法載入本機辨識元件（需連網下載一次）'));return;}
+    Tesseract.recognize(dataUrl,tessLang,{logger:function(m){
+      if(m&&m.status&&onProg)onProg(m.status+(m.progress?(' '+Math.round(m.progress*100)+'%'):''));}})
+      .then(function(r){cb(((r&&r.data&&r.data.text)||'').trim());})
+      .catch(err);});}
+
+function ocrRun(){
+  if(_ocrBusy){toast('辨識進行中');return;}
+  if(!_ocrFile){toast('請先選擇圖片或 PDF');return;}
+  var langKey=$('ocrLang').value||'zh';
+  var lang=OCR_LANGS.filter(function(a){return a[0]===langKey;})[0]||OCR_LANGS[0];
+  var out=$('ocrOut');
+  function prog(t){out.innerHTML='<div class="poll-empty">'+esc(t)+'</div>';}
+  _ocrBusy=true;
+  var b=$('ocrRunBtn');if(b){b.disabled=true;b.textContent='辨識中…';}
+  function done(text){
+    _ocrBusy=false;
+    if(b){b.disabled=false;b.textContent='開始辨識';}
+    _ocrText=text||'';
+    if(!_ocrText.trim()){out.innerHTML='<div class="poll-empty">沒有辨識到文字</div>';return;}
+    if(langKey==='zh'&&typeof hasSimplified==='function'&&hasSimplified(_ocrText))
+      _ocrText=s2t(_ocrText);
+    renderOcrOut();}
+  function fail(e){
+    _ocrBusy=false;
+    if(b){b.disabled=false;b.textContent='開始辨識';}
+    out.innerHTML='<div class="poll-empty">辨識失敗：'+esc((e&&e.message)||e)+'</div>';}
+  function runOne(url,cb2,cbErr,tag){
+    ocrTess(url,lang[2],cb2,cbErr,function(s){prog((tag||'')+s);});}
+
+  if(/pdf$/i.test(_ocrFile.name)||_ocrFile.type==='application/pdf'){
+    var f1=parseInt(($('ocrFrom')&&$('ocrFrom').value)||'1',10)||1;
+    var f2=parseInt(($('ocrTo')&&$('ocrTo').value)||'0',10)||0;
+    prog('正在把 PDF 轉成影像…');
+    pdfToImages(_ocrFile,f1,f2||0,function(pages,err){
+      if(!pages){fail(new Error(err||'PDF 轉換失敗'));return;}
+      _ocrPages=pages;
+      var res=[],i=0;
+      function nextPage(){
+        if(i>=pages.length){done(res.join('\n\n'));return;}
+        var pg=pages[i];
+        prog('辨識第 '+pg.p+' 頁（'+(i+1)+'／'+pages.length+'）…');
+        runOne(pg.url,function(tx){
+          res.push('【第 '+pg.p+' 頁】\n'+(tx||'（未偵測到文字）'));i++;setTimeout(nextPage,250);},
+          function(e){res.push('【第 '+pg.p+' 頁】辨識失敗：'+((e&&e.message)||''));i++;setTimeout(nextPage,400);},
+          '第 '+pg.p+' 頁 ');}
+      nextPage();},prog);
+    return;}
+
+  prog('辨識中…');
+  ocrFileToDataUrl(_ocrFile,function(url){
+    if(!url){fail(new Error('讀取檔案失敗'));return;}
+    runOne(url,done,fail,'');});}
+
+function renderOcrOut(){
+  var out=$('ocrOut');if(!out)return;
+  var n=_ocrText.length;
+  out.innerHTML='<div class="qz-meta">辨識完成・'+n+' 個字元'+(_ocrPages.length?('・'+_ocrPages.length+' 頁'):'')+'（可直接編輯修正）</div>'+
+    '<textarea id="ocrText" class="qz-fld ocr-text" rows="12"></textarea>'+
+    '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+      '<button class="btn btn-gold" style="flex:1 1 150px" onclick="ocrToWall()">貼到牆上</button>'+
+      (isHost?'<button class="btn btn-ghost ocr-quiz" style="flex:1 1 160px" onclick="ocrToQuiz()">用這段文字出題</button>':'')+
+      '<button class="btn btn-ghost" style="flex:1 1 130px" onclick="ocrCopy()">複製</button>'+
+      '<button class="btn btn-ghost" style="flex:1 1 130px" onclick="ocrSave()">存成 .txt</button>'+
+      '<button class="btn btn-ghost" style="flex:1 1 150px" onclick="ocrToCanvas()">加到畫布</button>'+
+      '<button class="btn btn-ghost" style="flex:1 1 150px" onclick="ocrToAI()">送進 AI 助教</button>'+
+      (isHost?'<button class="btn btn-ghost" style="flex:1 1 150px" onclick="ocrToMaterial()">加入教材庫</button>':'')+
+      '<button class="btn btn-ghost" style="flex:1 1 130px" onclick="ocrToTC()">轉繁體</button>'+
+    '</div>';
+  $('ocrText').value=_ocrText;
+  $('ocrText').addEventListener('input',function(){_ocrText=this.value;});}
+function ocrCur(){var t=$('ocrText');return t?t.value:_ocrText;}
+function ocrCopy(){try{navigator.clipboard.writeText(ocrCur());toast('已複製');}catch(e){toast('複製失敗');}}
+function ocrSave(){
+  dl('OCR_'+safeName((_ocrFile&&_ocrFile.name)||'辨識').replace(/\.[a-z0-9]+$/i,'')+'.txt',
+    new Blob(['﻿'+ocrCur()],{type:'text/plain;charset=utf-8'}));
+  toast('已存成文字檔');}
+function ocrToTC(){
+  if(typeof s2t!=='function'){toast('轉換元件未載入');return;}
+  var t=s2t(ocrCur());_ocrText=t;var el=$('ocrText');if(el)el.value=t;toast('已轉為繁體中文');}
+function ocrToWall(){
+  var t=ocrCur();if(!t.trim()){toast('沒有內容');return;}
+  if(myViewOnly&&!isHost){toast('目前是唯讀模式');return;}
+  var title=prompt('貼到牆上的標題',((_ocrFile&&_ocrFile.name)||'OCR 文字'));
+  if(title===null)return;
+  var post={id:uid(),uid:myId,name:myName,ts:nowHM(),type:'text',
+    subject:(title||'OCR 文字').slice(0,60),text:t.slice(0,6000),
+    color:'#eef4ff',reactions:{},comments:[]};
+  if(kanbanOn&&columns.length)post.col=(columns.indexOf(_lastCol)>=0?_lastCol:columns[0]);
+  feed.unshift(post);addPostEl(post);
+  if(isHost)hostBroadcast({t:'post',post:sanitizePost(post)});
+  else if(hostConn&&hostConn.open)tSend(hostConn,{t:'post',post:post});
+  saveSession();
+  $('ocrModal').classList.remove('show');
+  toast('已貼到牆上');}
+function ocrToCanvas(){
+  var t=ocrCur();if(!t.trim())return;
+  if(!$('drawModal').classList.contains('show')){toast('請先開啟畫布再使用');return;}
+  var cx=viewX+dViewW()/(2*dZoom),cy=viewY+dViewH()/(2*dZoom);
+  var o={id:'o'+(++_objSeq)+'_'+Math.random().toString(36).slice(2,7),type:'note',
+    text:t.slice(0,1200),fs:18,color:'#3a3021',font:drawFont,bg:'#fff8c9',
+    x:cx-220,y:cy-160,w:440,h:320,rot:0};
+  ensureRoom({x0:o.x,y0:o.y,x1:o.x+o.w,y1:o.y+o.h});
+  addObj(o);setTool('obj');applyBoardView();
+  if(typeof pushHistory==='function')pushHistory();
+  $('ocrModal').classList.remove('show');
+  toast('已加到畫布，可直接編輯');}
+function ocrToAI(){
+  var t=ocrCur();if(!t.trim())return;
+  if(typeof openAITutor!=='function'){toast('AI 助教未載入');return;}
+  $('ocrModal').classList.remove('show');
+  openAITutor();
+  setTimeout(function(){var i=$('aiIn');
+    if(i){i.value='請幫我整理並解釋以下內容：\n'+t.slice(0,1500);i.focus();}},220);}
+function ocrToQuiz(){
+  var t=ocrCur();
+  if(!t||!t.trim()){toast('沒有可用的文字');return;}
+  if(!isHost){toast('出題為房主功能');return;}
+  if(typeof openQuizSetup!=='function'){toast('AI 出題未載入');return;}
+  $('ocrModal').classList.remove('show');
+  openQuizSetup();
+  setTimeout(function(){
+    var box=$('qzTopic');
+    if(box){box.value=t.slice(0,3000);box.scrollTop=0;
+      toast('已把 OCR 文字帶入出題範圍，選好題數與難度即可產生題目');}},240);}
+function ocrToMaterial(){
+  var t=ocrCur();if(!t||!t.trim())return;
+  if(typeof materials==='undefined'||typeof saveMaterials!=='function'){toast('教材庫未載入');return;}
+  var subj=prompt('教材主題',((_ocrFile&&_ocrFile.name)||'OCR 文字').replace(/\.[a-z0-9]+$/i,''));
+  if(subj===null)return;
+  materials.push({id:uid(),subject:(subj||'OCR 文字').slice(0,40),text:t.slice(0,4000),color:'#eef4ff'});
+  saveMaterials();
+  if(typeof renderMaterials==='function'&&$('materialModal')&&$('materialModal').classList.contains('show'))renderMaterials();
+  toast('已加入教材庫，課堂中可一鍵推出');}
+
+/* 教師管理面板入口：即時字幕／音檔轉字幕／OCR */
+(function(){var base=openTeach;
+  window.openTeach=function(){base();
+    var t=document.getElementById('teachTools');if(!t)return;
+    [['capBtnT','#ic-micvocal','即時字幕',openCap],
+     ['whBtnT','#ic-music','音檔轉字幕',openWhisper],
+     ['ocrBtnT','#ic-search','OCR 文字辨識',openOCR]].forEach(function(a){
+      if(document.getElementById(a[0]))return;
+      var b=document.createElement('button');b.className='tbtn';b.id=a[0];
+      b.innerHTML='<svg class="ic" fill="none"><use href="'+a[1]+'"/></svg> '+a[2];
+      b.onclick=function(){if(typeof closeTeach==='function')closeTeach();a[3]();};
+      t.appendChild(b);});};})();
+</script>
+
+<script>
+/* =========================================================
+   金鑰設定：集中入口 ＋ 三把金鑰輪替
+
+   原本金鑰只能在「AI 出題」「音檔轉字幕」的視窗裡順便填，
+   沒用過那兩個功能的人根本找不到地方輸入，其他 AI 功能就一直說
+   「尚未設定 Groq API Key」。改成一個集中的設定視窗。
+
+   金鑰池：Groq 免費層是「每把金鑰各自計算每日與每分鐘上限」，
+   一堂課跑摘要＋出題＋助教＋轉字幕很容易撞到。存多把、撞到 429
+   就自動換下一把，並讓被限流的那把冷卻。
+
+   金鑰只存在瀏覽器 localStorage，不寫進 HTML 檔。
+   學生版是公開靜態檔，任何寫進檔案的金鑰等於公開發布。
+   ========================================================= */
+var GQ_POOL_KEY='shr_groq_pool', _gqCool={}, _gqPtr=0;
+
+function groqPool(){
+  var a=[];
+  try{a=JSON.parse(localStorage.getItem(GQ_POOL_KEY)||'[]');}catch(e){a=[];}
+  if(!Array.isArray(a))a=[];
+  a=a.map(function(x){return String(x||'').trim();}).filter(Boolean);
+  if(!a.length){                       /* 相容舊的單把金鑰 */
+    var one='';try{one=(localStorage.getItem('shr_groq')||'').trim();}catch(e){}
+    if(one)a=[one];}
+  return a;}
+function groqSavePool(arr){
+  arr=(arr||[]).map(function(x){return String(x||'').trim();}).filter(Boolean);
+  try{localStorage.setItem(GQ_POOL_KEY,JSON.stringify(arr));}catch(e){}
+  /* 第一把同步寫回 shr_groq，讓還沒改用池的舊程式碼照樣能跑 */
+  try{localStorage.setItem('shr_groq',arr[0]||'');}catch(e){}
+  _gqCool={};_gqPtr=0;}
+
+/* 取一把現在可用的。全部都在冷卻就挑最快解除的那把。 */
+function groqKey(){
+  var a=groqPool();if(!a.length)return '';
+  var now=Date.now(),best=null,bestT=Infinity;
+  for(var i=0;i<a.length;i++){
+    var k=a[(_gqPtr+i)%a.length],until=_gqCool[k]||0;
+    if(until<=now){_gqPtr=(_gqPtr+i)%a.length;return k;}
+    if(until<bestT){bestT=until;best=k;}}
+  return best||a[0];}
+function groqMarkLimited(k,secs){
+  if(!k)return;
+  _gqCool[k]=Date.now()+((secs||60)*1000);
+  var a=groqPool(),i=a.indexOf(k);
+  if(i>=0&&a.length>1){_gqPtr=(i+1)%a.length;
+    toast('第 '+(i+1)+' 把金鑰已達用量上限，改用第 '+(_gqPtr+1)+' 把');}}
+function groqKeyStatus(){
+  var a=groqPool(),now=Date.now();
+  return a.map(function(k,i){
+    var u=_gqCool[k]||0;
+    return {i:i,tail:k.slice(-6),cooling:u>now,left:Math.max(0,Math.round((u-now)/1000))};});}
+
+/* 帶輪替的 Groq 呼叫：429 或額度用罄就換下一把重試，最多試完整池 */
+function groqFetch(path,body,cb,err,isForm){
+  var a=groqPool();
+  if(!a.length){err&&err(new Error('尚未設定 Groq API Key，請點「設定」→「AI 金鑰」填入'));return;}
+  var tried=0;
+  (function attempt(){
+    var key=groqKey();
+    var opt={method:'POST',headers:{'Authorization':'Bearer '+key}};
+    if(isForm)opt.body=body;
+    else{opt.headers['Content-Type']='application/json';opt.body=JSON.stringify(body);}
+    fetch('https://api.groq.com/openai/v1/'+path,opt)
+      .then(function(r){return r.json().then(function(d){return {r:r,d:d};});})
+      .then(function(o){
+        var r=o.r,d=o.d;
+        if(!r.ok){
+          var msg=(d&&d.error&&d.error.message)||('HTTP '+r.status);
+          if((r.status===429||/rate limit|quota|too many/i.test(msg))&&(++tried<a.length)){
+            var wait=parseInt((r.headers.get('retry-after')||'60'),10)||60;
+            groqMarkLimited(key,wait);attempt();return;}
+          if(r.status===401){
+            err&&err(new Error('金鑰無效（末六碼 '+key.slice(-6)+'），請到「設定」→「AI 金鑰」更新'));return;}
+          err&&err(new Error(msg));return;}
+        cb(d);})
+      .catch(function(e){err&&err(e);});})();}
+
+/* 推理型模型（qwen3.x、gpt-oss）會把思考過程包在 <think> 裡一併吐出來，
+   不清掉就會跟辨識結果一起貼到牙上。v9.5 原版只清 markdown 圍籬。
+   模型也可能只吐出尾端的 </think> 而沒有開頭標籤，兩種都要接。 */
+function stripThink(t){
+  t=String(t||'');
+  t=t.replace(/<think>[\s\S]*?<\/think>/gi,'');
+  var i=t.lastIndexOf('</think>');
+  if(i>=0)t=t.slice(i+8);
+  t=t.replace(/^\s*<\/?(?:think|reasoning)>\s*/i,'');
+  return t.replace(/^```[a-z]*\r?\n?|```$/gi,'').trim();}
+
+/* 既有的 groqChat 改走金鑰池 */
+function groqChat(sys,usr,cb,err,maxTok){
+  groqFetch('chat/completions',
+    {model:groqModel(),temperature:0.5,max_tokens:maxTok||2600,
+     messages:[{role:'system',content:sys},{role:'user',content:usr}]},
+    function(d){cb(stripThink((d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||''));},
+    err);}
+
+/* ---- 設定視窗 ---- */
+function openKeyCfg(){
+  var a=groqPool();
+  for(var i=0;i<3;i++){var el=$('gqK'+i);if(el)el.value=a[i]||'';}
+  var m=$('gqModel');
+  if(m&&!m.options.length)GQ_MODELS.forEach(function(x){
+    var o=document.createElement('option');o.value=x[0];o.textContent=x[1];m.appendChild(o);});
+  if(m)m.value=groqModel();
+  renderKeyStatus();
+  $('keyModal').classList.add('show');}
+var GQ_MODELS=[
+  ['llama-3.3-70b-versatile','Llama 3.3 70B（通用・預設）'],
+  ['openai/gpt-oss-120b','GPT-OSS 120B（較強・稍慢）'],
+  ['llama-3.1-8b-instant','Llama 3.1 8B（最快・較淺）']];
+function renderKeyStatus(){
+  var box=$('gqStatus');if(!box)return;
+  var st=groqKeyStatus();
+  if(!st.length){box.innerHTML='<div class="ms-hint">尚未填入任何金鑰。AI 摘要、AI 出題、AI 助教、提問分群、音檔轉字幕、OCR 視覺辨識都需要它。</div>';return;}
+  box.innerHTML='<div class="ms-hint">目前 '+st.length+' 把金鑰：'+
+    st.map(function(s){
+      return '<span class="gq-chip'+(s.cooling?' cool':'')+'">第 '+(s.i+1)+' 把 ···'+esc(s.tail)+
+             (s.cooling?('（冷卻 '+s.left+' 秒）'):'')+'</span>';}).join('')+
+    '　撞到用量上限會自動換下一把。</div>';}
+function saveKeyCfg(){
+  var a=[];
+  for(var i=0;i<3;i++){var el=$('gqK'+i);if(el&&el.value.trim())a.push(el.value.trim());}
+  var bad=a.filter(function(k){return !/^gsk_[A-Za-z0-9]{20,}$/.test(k);});
+  if(bad.length){toast('有 '+bad.length+' 把金鑰格式不像 Groq 金鑰（應為 gsk_ 開頭）');return;}
+  groqSavePool(a);
+  var m=$('gqModel');if(m){try{localStorage.setItem('shr_groq_model',m.value);}catch(e){}}
+  renderKeyStatus();
+  toast(a.length?('已儲存 '+a.length+' 把金鑰'):'已清空金鑰');}
+function testKeyCfg(){
+  saveKeyCfg();
+  var out=$('gqTest');if(!out)return;
+  if(!groqPool().length){out.innerHTML='<div class="poll-empty">請先填入至少一把金鑰</div>';return;}
+  out.innerHTML='<div class="poll-empty">正在測試…</div>';
+  var t0=Date.now();
+  groqChat('你是一個測試回應器，只回覆使用者要求的字，不要多說。','請只回覆「連線正常」四個字。',
+    function(tx){
+      out.innerHTML='<div class="qz-meta">連線成功・'+(Date.now()-t0)+' ms・模型 '+esc(groqModel())+
+        '・使用第 '+(groqPool().indexOf(groqKey())+1)+' 把金鑰</div>'+
+        '<div class="ms-hint">AI 回覆：'+esc(String(tx).slice(0,60))+'</div>';
+      renderKeyStatus();},
+    function(e){
+      out.innerHTML='<div class="poll-empty">測試失敗：'+esc((e&&e.message)||e)+'</div>';
+      renderKeyStatus();});}
+function clearKeyCfg(){
+  if(!confirm('確定清空本機儲存的所有 Groq 金鑰？\n（只影響這台裝置的這個瀏覽器）'))return;
+  for(var i=0;i<3;i++){var el=$('gqK'+i);if(el)el.value='';}
+  groqSavePool([]);renderKeyStatus();
+  var o=$('gqTest');if(o)o.innerHTML='';
+  toast('已清空');}
+
+/* 既有兩個視窗的金鑰欄改為讀池，填了也回寫池 */
+(function(){
+  function syncIn(id){
+    var el=$(id);if(!el)return;
+    if(!el.value)el.value=groqKey();
+    if(el._gqWired)return;el._gqWired=true;
+    el.addEventListener('change',function(){
+      var v=this.value.trim();if(!v)return;
+      var a=groqPool();
+      if(a.indexOf(v)<0){a.unshift(v);groqSavePool(a.slice(0,3));toast('金鑰已存入金鑰池');}});}
+  var bw=openWhisper;window.openWhisper=function(){bw();syncIn('whKey');};
+  if(typeof openQuizSetup==='function'){
+    var bq=openQuizSetup;window.openQuizSetup=function(){bq();syncIn('qzKey');};}
+})();
+
+/* 入口：教師面板 ＋ 大廳 */
+(function(){var base=openTeach;
+  window.openTeach=function(){base();
+    var t=document.getElementById('teachTools');
+    if(!t||document.getElementById('keyBtnT'))return;
+    var b=document.createElement('button');b.className='tbtn';b.id='keyBtnT';
+    b.innerHTML='<svg class="ic" fill="none"><use href="#ic-settings"/></svg> AI 金鑰設定';
+    b.onclick=function(){if(typeof closeTeach==='function')closeTeach();openKeyCfg();};
+    t.appendChild(b);};})();
+</script>
+
+<script>
+/* =========================================================
+   課堂紀錄檢視
+
+   起因：學員端做得到的事，老師端都只有「當下的即時通知」，
+   沒有「事後可查的累積紀錄」。簽到最明顯——老師只看得到
+   「XXX 已簽到」跳一下，名冊只顯示現在還在線的人的布林狀態，
+   學員一離線就從名冊消失，簽到時間也從沒顯示過。
+   資料其實一直有側錄在 logs.*，只是沒有畫面。
+
+   這裡把 logs 的七類紀錄全部做成可檢視、可匯出的畫面。
+   簽到頁會把「已離線但簽到過」的人一併列出，這正是原本會漏掉的人。
+   ========================================================= */
+var CLOG_TABS=[
+  ['ck','簽到'],['hand','舉手'],['buzz','搶答'],['poll','投票'],
+  ['cloud','文字雲'],['quiz','測驗'],['exit','退場券']];
+var _clogTab='ck';
+
+function openClassLog(t){
+  if(!isHost){toast('課堂紀錄為房主功能');return;}
+  if(t)_clogTab=t;
+  renderClassLog();
+  $('clogModal').classList.add('show');}
+function clogGo(t){_clogTab=t;renderClassLog();}
+
+function clogCount(k){
+  var L=logs||{};
+  if(k==='ck')return clogCheckinRows().length;
+  if(k==='hand')return (L.hands||[]).length;
+  if(k==='buzz')return (L.buzz||[]).length;
+  if(k==='poll')return (L.polls||[]).length;
+  if(k==='cloud')return (L.clouds||[]).length;
+  if(k==='quiz')return (L.quiz||[]).length;
+  if(k==='exit')return (L.exits||[]).length;
+  return 0;}
+
+/* 簽到清單＝現在在線的人 ∪ 曾經簽到過的人（後者可能已離線） */
+function clogCheckinRows(){
+  var seen={},rows=[];
+  memberArray().forEach(function(m){
+    if(m.id===myId)return;
+    var mm=members[m.id]||{};
+    seen[m.id]=1;
+    rows.push({uid:m.id,name:m.name,group:mm.group||'',
+      ck:!!mm.checkedIn,ts:mm.ckTime||'',online:true,posts:memPosts(m.id)});});
+  (logs.checkins||[]).forEach(function(x){
+    if(seen[x.uid])return;
+    seen[x.uid]=1;
+    rows.push({uid:x.uid,name:x.name,group:'',ck:true,ts:x.ts||'',online:false,posts:memPosts(x.uid)});});
+  rows.sort(function(a,b){
+    if(a.ck!==b.ck)return a.ck?-1:1;
+    if(a.ck&&b.ck)return String(a.ts).localeCompare(String(b.ts));
+    return String(a.name||'').localeCompare(String(b.name||''),'zh-Hant');});
+  return rows;}
+
+function renderClassLog(){
+  var nav=$('clogNav'),box=$('clogBody');
+  if(!nav||!box)return;
+  nav.innerHTML=CLOG_TABS.map(function(a){
+    var n=clogCount(a[0]);
+    return '<button class="clog-tab'+(_clogTab===a[0]?' on':'')+'" onclick="clogGo(\''+a[0]+'\')">'+
+      a[1]+(n?('<i>'+n+'</i>'):'')+'</button>';}).join('');
+  box.innerHTML=({ck:clogCk,hand:clogHand,buzz:clogBuzz,poll:clogPoll,
+                  cloud:clogCloud,quiz:clogQuiz,exit:clogExit}[_clogTab]||clogCk)();}
+
+function clogEmpty(t){return '<div class="poll-empty">'+esc(t)+'</div>';}
+function clogHead(txt,btn){
+  return '<div class="clog-head"><span>'+txt+'</span>'+
+    (btn?'<button class="btn btn-ghost clog-dl" onclick="'+btn+'">匯出 CSV</button>':'')+'</div>';}
+
+function clogCk(){
+  var rows=clogCheckinRows();
+  if(!rows.length)return clogEmpty('還沒有人進教室。發起簽到請到「名冊／出席」。');
+  var ck=rows.filter(function(r){return r.ck;}).length;
+  var off=rows.filter(function(r){return !r.online;}).length;
+  var h=clogHead('共 '+rows.length+' 人・已簽到 <b>'+ck+'</b> 人・未簽到 '+(rows.length-ck)+' 人'+
+    (off?('・其中 '+off+' 人已離線'):''),'clogExport(\'ck\')');
+  h+='<table class="clog-tb"><thead><tr><th>簽到時間</th><th>姓名</th><th>組別</th><th>狀態</th><th>貼文</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    h+='<tr class="'+(r.ck?'':'no')+'">'+
+       '<td class="mono">'+esc(r.ts||'—')+'</td>'+
+       '<td>'+esc(r.name||'學員')+'</td>'+
+       '<td>'+esc(r.group||'—')+'</td>'+
+       '<td>'+(r.ck?'<span class="r-ck on">已簽到</span>':'<span class="r-ck">未簽到</span>')+
+       (r.online?'':' <span class="clog-off">已離線</span>')+'</td>'+
+       '<td>'+r.posts+'</td></tr>';});
+  return h+'</tbody></table>';}
+
+function clogHand(){
+  var a=logs.hands||[];
+  if(!a.length)return clogEmpty('這堂課還沒有舉手紀錄。');
+  var h=clogHead('共 '+a.length+' 輪舉手','clogExport(\'hand\')');
+  a.slice().reverse().forEach(function(x){
+    h+='<div class="clog-item"><div class="clog-ts">'+esc(x.ts)+'　'+x.list.length+' 人</div>'+
+       '<div class="clog-names">'+x.list.map(function(p){return '<span>'+esc(p.name)+'</span>';}).join('')+'</div></div>';});
+  return h;}
+
+function clogBuzz(){
+  var a=logs.buzz||[];
+  if(!a.length)return clogEmpty('這堂課還沒有搶答紀錄。');
+  var h=clogHead('共 '+a.length+' 輪搶答','clogExport(\'buzz\')');
+  a.slice().reverse().forEach(function(x){
+    h+='<div class="clog-item"><div class="clog-ts">'+esc(x.ts)+'</div><div class="clog-names">'+
+       x.list.map(function(p,i){return '<span'+(i===0?' class="first"':'')+'>'+(i+1)+'. '+esc(p.name)+'</span>';}).join('')+
+       '</div></div>';});
+  return h;}
+
+function clogPoll(){
+  var a=logs.polls||[];
+  if(!a.length)return clogEmpty('這堂課還沒有投票紀錄。');
+  var h=clogHead('共 '+a.length+' 次投票','clogExport(\'poll\')');
+  a.slice().reverse().forEach(function(p){
+    h+='<div class="clog-item"><div class="clog-ts">'+esc(p.ts)+'　'+(p.total||0)+' 人作答</div>'+
+       '<div class="clog-q">'+esc(p.q||'')+'</div>';
+    if(p.options&&p.options.length){
+      var mx=Math.max.apply(null,(p.counts||[0]).concat([1]));
+      p.options.forEach(function(o,i){
+        var c=(p.counts&&p.counts[i])||0;
+        h+='<div class="clog-bar"><span class="lb">'+esc(o)+'</span>'+
+           '<span class="br"><i style="width:'+Math.round(c/mx*100)+'%"></i></span>'+
+           '<span class="vn">'+c+'</span></div>';});}
+    if(p.answers&&p.answers.length)
+      h+='<div class="clog-names">'+p.answers.map(function(x){
+          return '<span>'+esc(x.name)+'：'+esc(String(x.text||'').slice(0,40))+'</span>';}).join('')+'</div>';
+    h+='</div>';});
+  return h;}
+
+function clogCloud(){
+  var a=logs.clouds||[];
+  if(!a.length)return clogEmpty('這堂課還沒有文字雲紀錄。');
+  var h=clogHead('共 '+a.length+' 次文字雲','clogExport(\'cloud\')');
+  a.slice().reverse().forEach(function(c){
+    var ws=[];for(var w in (c.words||{}))ws.push([w,c.words[w]]);
+    ws.sort(function(x,y){return y[1]-x[1];});
+    h+='<div class="clog-item"><div class="clog-ts">'+esc(c.ts)+'　'+ws.length+' 個詞</div>'+
+       '<div class="clog-q">'+esc(c.q||'')+'</div><div class="clog-names">'+
+       ws.slice(0,40).map(function(x){return '<span>'+esc(x[0])+' <b>'+x[1]+'</b></span>';}).join('')+
+       '</div></div>';});
+  return h;}
+
+function clogQuiz(){
+  var a=logs.quiz||[];
+  if(!a.length)return clogEmpty('這堂課還沒有測驗紀錄。');
+  var h=clogHead('共 '+a.length+' 題','clogExport(\'quiz\')');
+  a.slice().reverse().forEach(function(q){
+    h+='<div class="clog-item"><div class="clog-ts">'+esc(q.ts)+'　第 '+(q.round||1)+' 回第 '+((q.idx||0)+1)+' 題</div>'+
+       '<div class="clog-q">'+esc(q.q||'')+'</div>';
+    if(q.options&&q.options.length){
+      h+='<div class="clog-names">'+q.options.map(function(o,i){
+        return '<span'+(i===q.answer?' class="first"':'')+'>'+esc(o)+
+               (q.counts?('（'+(q.counts[i]||0)+'）'):'')+'</span>';}).join('')+'</div>';}
+    h+='</div>';});
+  return h;}
+
+function clogExit(){
+  var a=logs.exits||[];
+  if(!a.length)return clogEmpty('這堂課還沒有退場券紀錄。');
+  var h=clogHead('共 '+a.length+' 次','clogExport(\'exit\')');
+  a.slice().reverse().forEach(function(x){
+    h+='<div class="clog-item"><div class="clog-ts">'+esc(x.ts)+'　'+x.answers.length+' 人作答</div>'+
+       '<div class="clog-q">'+esc(x.q||'')+'</div>';
+    x.answers.forEach(function(an){
+      h+='<div class="clog-ans"><b>'+esc(an.name)+'</b>'+esc(String(an.text||''))+'</div>';});
+    h+='</div>';});
+  return h;}
+
+/* 各頁單獨匯出 */
+function clogExport(k){
+  var rows,name;
+  if(k==='ck'){
+    rows=[['簽到時間','姓名','組別','是否簽到','線上狀態','貼文數']];
+    clogCheckinRows().forEach(function(r){
+      rows.push([r.ts||'',r.name||'',r.group||'',r.ck?'已簽到':'未簽到',r.online?'在線':'已離線',r.posts]);});
+    name='簽到紀錄';}
+  else if(k==='hand'){
+    rows=[['時間','人數','名單']];
+    (logs.hands||[]).forEach(function(x){rows.push([x.ts,x.list.length,x.list.map(function(p){return p.name;}).join('、')]);});
+    name='舉手紀錄';}
+  else if(k==='buzz'){
+    rows=[['時間','名次','姓名']];
+    (logs.buzz||[]).forEach(function(x){x.list.forEach(function(p,i){rows.push([x.ts,i+1,p.name]);});});
+    name='搶答紀錄';}
+  else if(k==='poll'){
+    rows=[['時間','題目','選項','票數']];
+    (logs.polls||[]).forEach(function(p){
+      if(p.options&&p.options.length)p.options.forEach(function(o,i){rows.push([p.ts,p.q,o,(p.counts&&p.counts[i])||0]);});
+      (p.answers||[]).forEach(function(a){rows.push([p.ts,p.q,'（文字）'+a.name,a.text]);});});
+    name='投票紀錄';}
+  else if(k==='cloud'){
+    rows=[['時間','題目','詞','次數']];
+    (logs.clouds||[]).forEach(function(c){for(var w in (c.words||{}))rows.push([c.ts,c.q,w,c.words[w]]);});
+    name='文字雲紀錄';}
+  else if(k==='quiz'){
+    rows=[['時間','回合','題號','題目','正解']];
+    (logs.quiz||[]).forEach(function(q){
+      rows.push([q.ts,q.round||1,(q.idx||0)+1,q.q,(q.options&&q.options[q.answer])||'']);});
+    name='測驗紀錄';}
+  else{
+    rows=[['時間','題目','姓名','回答']];
+    (logs.exits||[]).forEach(function(x){x.answers.forEach(function(a){rows.push([x.ts,x.q,a.name,a.text]);});});
+    name='退場券紀錄';}
+  var csv=rows.map(function(r){
+    return r.map(function(c){return '"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  dl(name+'_'+safeName(roomName)+'_'+_stamp()+'.csv',
+    new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+  toast('已匯出'+name);}
+
+/* 名冊也補上簽到時間，並列出已離線但簽到過的人 */
+(function(){
+  var base=openRoster;
+  window.openRoster=function(){
+    base();
+    var l=$('rosterList');if(!l||!isHost)return;
+    /* 為在線者補上簽到時間。
+       不能拿 .r-nm 的 textContent 比對——它還含「（我）」與組別標籤的文字，
+       只有第一個文字節點才是姓名本體。 */
+    var _byName={};
+    for(var _id in members)if(members[_id]&&members[_id].ckTime)_byName[members[_id].name||'']=members[_id].ckTime;
+    [].forEach.call(l.querySelectorAll('.roster-row'),function(row){
+      var ckEl=row.querySelector('.r-ck.on');if(!ckEl)return;
+      if(ckEl.querySelector('.clog-ts'))return;
+      var nmEl=row.querySelector('.r-nm');if(!nmEl||!nmEl.firstChild)return;
+      var nm=String(nmEl.firstChild.textContent||'').trim();
+      if(_byName[nm])ckEl.innerHTML+=' <span class="clog-ts">'+esc(_byName[nm])+'</span>';});
+    /* 列出已離線但簽到過的人 */
+    var gone=(logs.checkins||[]).filter(function(x){return !members[x.uid];});
+    if(gone.length&&!l.querySelector('.roster-gone')){
+      var d=document.createElement('div');d.className='roster-gone';
+      d.innerHTML='<div class="ms-hint" style="margin:10px 0 6px">已離線但本堂簽到過（'+gone.length+' 人）</div>'+
+        gone.map(function(x){
+          return '<div class="roster-row"><div class="r-av off">'+esc((x.name||'?').slice(0,1))+'</div>'+
+                 '<div class="r-main"><div class="r-nm">'+esc(x.name||'學員')+'</div>'+
+                 '<div class="r-stat"><span class="r-ck on">已簽到</span> <span class="clog-ts">'+esc(x.ts||'')+'</span>'+
+                 ' <span class="clog-off">已離線</span> · 貼文 '+memPosts(x.uid)+'</div></div></div>';}).join('');
+      l.appendChild(d);}
+    /* 入口：從名冊直接開完整紀錄 */
+    if(!$('rosterClogBtn')){
+      var s=$('rosterSum');
+      if(s&&s.parentNode){
+        var b=document.createElement('button');
+        b.className='btn btn-ghost';b.id='rosterClogBtn';
+        b.style.cssText='margin-top:10px;width:100%';
+        b.innerHTML='<svg class="ic" fill="none"><use href="#ic-history"/></svg> 查看完整課堂紀錄（簽到／舉手／搶答／投票…）';
+        b.onclick=function(){$('rosterModal').classList.remove('show');openClassLog('ck');};
+        s.parentNode.appendChild(b);}}};})();
+
+/* 入口：教師面板 */
+(function(){var base=openTeach;
+  window.openTeach=function(){base();
+    var t=document.getElementById('teachTools');
+    if(!t||document.getElementById('clogBtnT'))return;
+    var b=document.createElement('button');b.className='tbtn';b.id='clogBtnT';
+    b.innerHTML='<svg class="ic" fill="none"><use href="#ic-history"/></svg> 課堂紀錄';
+    b.onclick=function(){if(typeof closeTeach==='function')closeTeach();openClassLog();};
+    t.appendChild(b);};})();
+</script>
+
+<script>
+/* =========================================================
+   v9.5 移植 — OCR 加回 Groq 視覺引擎（可選，非預設）
+
+   先前只收 Tesseract，理由是不想把含學生姓名的板書送第三方。
+   但 Tesseract 對「手寫板書」與「歪斜拍照」的準度確實明顯較差，
+   那類正是老師最需要辨識的東西。改成兩個引擎並存、由老師當場選：
+
+     本機辨識 Tesseract  預設。不需金鑰、不出瀏覽器。印刷體與掃描 PDF 夠用。
+     Groq 視覺 qwen3.6  需 Groq 金鑰，圖片會送到 Groq。手寫與歪斜明顯較準。
+
+   仍不收 Gemini：那會多一組金鑰來源要管，而 Groq 金鑰本來就有。
+   選單上直接寫明哪個會上傳，不要讓老師在不知情的狀況下送出板書。
+   ========================================================= */
+var GROQ_VISION=['qwen/qwen3.6-27b','meta-llama/llama-4-scout-17b-16e-instruct'];
+
+/* 先縮圖再送，避免超過請求上限，也省流量 */
+function ocrShrink(dataUrl,maxW,cb){
+  var im=new Image();
+  im.onload=function(){
+    var sc=Math.min(1,(maxW||1600)/Math.max(1,im.naturalWidth));
+    if(sc>=1){cb(dataUrl);return;}
+    var cv=document.createElement('canvas');
+    cv.width=Math.round(im.naturalWidth*sc);cv.height=Math.round(im.naturalHeight*sc);
+    cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+    try{cb(cv.toDataURL('image/jpeg',0.88));}catch(e){cb(dataUrl);}};
+  im.onerror=function(){cb(dataUrl);};
+  im.src=dataUrl;}
+
+function ocrPrompt(langName,keep){
+  return '請辨識這張圖片中的所有文字並原樣輸出。'+
+    (langName.indexOf('繁體')>=0?'一律使用繁體中文（台灣用語）輸出，不要輸出簡體字。':'')+
+    (keep?'保留原本的段落、換行、條列與表格結構（表格請用 Markdown 表格）。':'只輸出純文字，去掉多餘換行。')+
+    '不要加任何說明、標題或前後綴，只輸出辨識到的文字內容。若圖片沒有文字，回覆「（未偵測到文字）」。';}
+
+function ocrGroq(dataUrl,langName,keep,cb,err){
+  ocrShrink(dataUrl,1600,function(url){
+    var mi=0;
+    function call(){
+      groqFetch('chat/completions',{
+        model:GROQ_VISION[mi],temperature:0,max_tokens:4000,
+        messages:[{role:'user',content:[
+          {type:'text',text:ocrPrompt(langName,keep)},
+          {type:'image_url',image_url:{url:url}}]}]},
+        function(d){
+          var tx=(d.choices&&d.choices[0]&&d.choices[0].message&&d.choices[0].message.content)||'';
+          cb(stripThink(tx));},
+        function(e){
+          var m=(e&&e.message)||'';
+          /* 模型被下架就換備援模型再試一次 */
+          if(mi===0&&/decommission|not found|does not exist|model_not_found/i.test(m)){mi=1;call();return;}
+          err(e);});}
+    call();});}
+
+/* 引擎選單：把隱藏欄位換成真的下拉，預設仍是本機辨識 */
+(function(){
+  var base=openOCR;
+  window.openOCR=function(){
+    var e=$('ocrEngine');
+    if(e&&e.tagName==='INPUT'){
+      var s=document.createElement('select');
+      s.id='ocrEngine';s.className='qz-fld';
+      s.innerHTML='<option value="tess">本機辨識 Tesseract（不需金鑰・圖片不離開這台電腦）</option>'+
+                  '<option value="groq">Groq 視覺 qwen3.6（需金鑰・手寫與歪斜較準・圖片會上傳 Groq）</option>';
+      s.onchange=ocrEngineHint;
+      e.parentNode.replaceChild(s,e);
+      var lab=document.createElement('div');
+      lab.className='qz-lab';lab.textContent='辨識引擎';
+      s.parentNode.insertBefore(lab,s);
+      var hint=document.createElement('div');
+      hint.className='ms-hint';hint.id='ocrEngHint';hint.style.margin='6px 0 4px';
+      s.parentNode.insertBefore(hint,s.nextSibling);}
+    base();
+    ocrEngineHint();};})();
+function ocrEngineHint(){
+  var e=$('ocrEngine'),h=$('ocrEngHint');if(!e||!h)return;
+  if(e.value==='groq'){
+    var n=(typeof groqPool==='function')?groqPool().length:0;
+    h.innerHTML=n?('圖片會縮到 1600px 後上傳 Groq 辨識。目前有 '+n+' 把金鑰可用。')
+                 :'<b>尚未設定 Groq 金鑰</b>，請先到「設定」→「AI 金鑰設定」填入，或改用本機辨識。';}
+  else h.innerHTML='全程在瀏覽器內辨識，圖片不會離開這台電腦。首次使用會下載一次語言檔（約 15 MB，之後快取）。';}
+
+/* ocrRun 的引擎派發改成兩選一 */
+(function(){
+  var base=ocrRun;
+  window.ocrRun=function(){
+    var e=$('ocrEngine');
+    if(!e||e.value!=='groq'){base();return;}
+    if(!groqPool().length){toast('請先到「設定」→「AI 金鑰設定」填入 Groq 金鑰，或改用本機辨識');return;}
+    if(_ocrBusy){toast('辨識進行中');return;}
+    if(!_ocrFile){toast('請先選擇圖片或 PDF');return;}
+    var langKey=$('ocrLang').value||'zh';
+    var lang=OCR_LANGS.filter(function(a){return a[0]===langKey;})[0]||OCR_LANGS[0];
+    var keep=$('ocrKeep')?$('ocrKeep').checked:true;
+    var out=$('ocrOut');
+    function prog(t){out.innerHTML='<div class="poll-empty">'+esc(t)+'</div>';}
+    _ocrBusy=true;
+    var b=$('ocrRunBtn');if(b){b.disabled=true;b.textContent='辨識中…';}
+    function done(text){
+      _ocrBusy=false;if(b){b.disabled=false;b.textContent='開始辨識';}
+      _ocrText=text||'';
+      if(!_ocrText.trim()){out.innerHTML='<div class="poll-empty">沒有辨識到文字</div>';return;}
+      if(langKey==='zh'&&typeof hasSimplified==='function'&&hasSimplified(_ocrText))_ocrText=s2t(_ocrText);
+      renderOcrOut();}
+    function fail(e2){
+      _ocrBusy=false;if(b){b.disabled=false;b.textContent='開始辨識';}
+      out.innerHTML='<div class="poll-empty">辨識失敗：'+esc((e2&&e2.message)||e2)+'</div>';}
+
+    if(/pdf$/i.test(_ocrFile.name)||_ocrFile.type==='application/pdf'){
+      var f1=parseInt(($('ocrFrom')&&$('ocrFrom').value)||'1',10)||1;
+      var f2=parseInt(($('ocrTo')&&$('ocrTo').value)||'0',10)||0;
+      prog('正在把 PDF 轉成影像…');
+      pdfToImages(_ocrFile,f1,f2||0,function(pages,err){
+        if(!pages){fail(new Error(err||'PDF 轉換失敗'));return;}
+        _ocrPages=pages;
+        var res=[],i=0;
+        function nextPage(){
+          if(i>=pages.length){done(res.join('\n\n'));return;}
+          var pg=pages[i];
+          prog('辨識第 '+pg.p+' 頁（'+(i+1)+'／'+pages.length+'）…');
+          ocrGroq(pg.url,lang[1],keep,
+            function(tx){res.push('【第 '+pg.p+' 頁】\n'+(tx||'（未偵測到文字）'));i++;setTimeout(nextPage,400);},
+            function(e2){res.push('【第 '+pg.p+' 頁】辨識失敗：'+((e2&&e2.message)||''));i++;setTimeout(nextPage,600);});}
+        nextPage();},prog);
+      return;}
+
+    prog('上傳並辨識中…');
+    ocrFileToDataUrl(_ocrFile,function(url){
+      if(!url){fail(new Error('讀取檔案失敗'));return;}
+      ocrGroq(url,lang[1],keep,done,fail);});};})();
+</script>
+
+<script>
+/* =========================================================
+   版本號
+
+   本專案是從上游「教師專業版 v3」分出來重新設計的，
+   之後陸續從上游 v7.4、v9.6 選性移植功能。
+   繼續沿用上游編號會分不清楚「這台電腦上的是哪一份」，
+   所以改用本專案自己的編號，從 2.0 起算（主版號.次版號 加上建置日期）。
+   1.x 保留給「重新設計後、併入 v7.4 之前」那段早期版本，不回溯標註。
+   改版上線前記得同步改這兩個值。
+   ========================================================= */
+var APP_VER='2.0';
+var APP_BUILD='2026-08-22';
+/* _block 是 IIFE 內的區域函式，兩版都取不到，改看建置時就固定的標題。
+   這段在進教室之前執行，標題還沒被教室名稱賓換。 */
+var APP_EDITION=/學生版/.test(document.title||'')?'學生版':'標準版';
+function appVerText(){return 'v'+APP_VER+'　'+APP_EDITION+'　建置 '+APP_BUILD;}
+(function(){
+  function put(){
+    /* 大廳：標語下方 */
+    var tag=document.querySelector('.tag');
+    if(tag&&!document.getElementById('appVer')){
+      var d=document.createElement('div');d.id='appVer';d.className='app-ver';
+      d.textContent=appVerText();
+      d.title='回報問題時請附上這行，才知道你跑的是哪一版';
+      tag.parentNode.insertBefore(d,tag.nextSibling);}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',put);else put();
+})();
+/* 教師面板也露一行，上課中不用退回大廳就查得到 */
+(function(){var base=openTeach;
+  window.openTeach=function(){base();
+    var t=document.getElementById('teachTools');
+    if(!t||document.getElementById('verLineT'))return;
+    var d=document.createElement('div');d.id='verLineT';d.className='ver-line';
+    d.textContent=appVerText();
+    t.appendChild(d);};})();
+</script>
+<script>
+/* =========================================================
+   貼文送達確認
+
+   起因：User 發現老師的牆上少了學生剛貼的東西，但學生自己看得到。
+   查證後，房主端收到 post 時有三條路會**靜默丟棄**：
+     1. 該學員被設為唯讀（viewOnly）→ 直接 return，什麼都不回
+     2. 貼文 id 重複 → 直接 return
+     3. 已達每人貼文上限 → 這條有回 notice（唯一有回饋的）
+   而學生端是「先 feed.unshift 貼上自己的牆，再送給房主」，
+   所以被丟掉時學生端完全沒有徵兆——卡片好端端留在自己畫面上，
+   以為貼成功了，老師卻永遠看不到。星狀拓樸下這是最難察覺的一種失敗。
+
+   作法：房主對每一則收到的 post 都回 postack；學生端登記待確認，
+   收到 ok 就清掉，收到拒絕或逾時就在卡片上標「未送達」並給重送鈕。
+   把靜默失敗變成看得見的失敗。
+   ========================================================= */
+var _pendPost={}, PENDPOST_MS=12000;
+
+/* ---- 房主端：一律回覆處理結果 ----
+   要包的是 hostHandle（外層派發），不是 hostHandleX。
+   後者是前置掛鉤，回 falsy 之後 hostHandle 才做真正的處理；
+   包在前置掛鉤裡去查 findPost() 永遠查不到，
+   連正常貼文都會被回報成未送達。 */
+(function(){
+  var base=hostHandle;
+  window.hostHandle=function(o,c){
+    if(!(o&&o.t==='post'&&o.post&&c))return base(o,c);
+    var uid=c._uid, id=o.post.id;
+    if(members[uid]&&members[uid].viewOnly){
+      tSend(c,{t:'postack',id:id,ok:false,why:'你目前是唯讀模式，老師尚未開放你貼文'});return;}
+    if(findPost(id)){tSend(c,{t:'postack',id:id,ok:true});return;}
+    if(maxPosts>0){
+      var cnt=0;for(var i=0;i<feed.length;i++)if(feed[i].uid===uid)cnt++;
+      if(cnt>=maxPosts){
+        tSend(c,{t:'postack',id:id,ok:false,why:'已達每人貼文上限（'+maxPosts+' 則）'});return;}}
+    var r=base(o,c);
+    var got=!!findPost(id);
+    tSend(c,{t:'postack',id:id,ok:got,
+      why:got?'':'房主端未能收下這則貼文，請重試'});
+    return r;};})();
+
+/* ---- 學生端：登記待確認 ---- */
+(function(){
+  var base=tSend;
+  window.tSend=function(c,o){
+    var r=base(c,o);
+    try{
+      if(o&&o.t==='post'&&o.post&&!isHost&&c===hostConn){
+        var id=o.post.id;
+        markPostPending(id);
+        clearTimeout(_pendPost[id]&&_pendPost[id].t);
+        _pendPost[id]={t:setTimeout(function(){
+          markPostFailed(id,'送出後 '+(PENDPOST_MS/1000)+' 秒內沒有收到老師端的確認');},PENDPOST_MS)};}
+    }catch(e){}
+    return r;};})();
+
+(function(){var gx=guestHandleX;
+  window.guestHandleX=function(o){
+    if(o&&o.t==='postack'){
+      var p=_pendPost[o.id];
+      if(p){clearTimeout(p.t);delete _pendPost[o.id];}
+      if(o.ok)markPostOK(o.id);
+      else markPostFailed(o.id,o.why||'老師端未收下這則貼文');
+      return true;}
+    return gx(o);};})();
+
+function cardOf(id){return document.querySelector('.card[data-id="'+id+'"]');}
+function markPostPending(id){
+  var c=cardOf(id);if(!c)return;
+  var b=c.querySelector('.send-st')||document.createElement('div');
+  b.className='send-st pend';b.innerHTML='傳送中…';
+  if(!b.parentNode)c.insertBefore(b,c.firstChild);}
+function markPostOK(id){
+  var c=cardOf(id);if(!c)return;
+  var b=c.querySelector('.send-st');
+  if(b){b.className='send-st ok';b.innerHTML='已送達全班';
+    setTimeout(function(){if(b.parentNode)b.parentNode.removeChild(b);},2600);}}
+function markPostFailed(id,why){
+  var c=cardOf(id);
+  var p=findPost(id);
+  if(!c){ /* 卡片可能還沒畫出來（例如切到別的欄），下一次重繪再補 */
+    if(p)p._undeliver=why||'未送達';
+    return;}
+  if(p)p._undeliver=why||'未送達';
+  var b=c.querySelector('.send-st')||document.createElement('div');
+  b.className='send-st bad';
+  b.innerHTML='<b>未送達</b>'+esc(why||'')+
+    '<button class="send-re" onclick="resendPost(\''+id+'\')">重送</button>';
+  if(!b.parentNode)c.insertBefore(b,c.firstChild);
+  c.classList.add('undeliver');}
+function resendPost(id){
+  var p=findPost(id);if(!p)return;
+  if(isHost){markPostOK(id);return;}
+  if(!(hostConn&&hostConn.open)){toast('目前沒有連上老師，請先確認連線');return;}
+  delete p._undeliver;
+  var c=cardOf(id);if(c)c.classList.remove('undeliver');
+  tSend(hostConn,{t:'post',post:p});
+  toast('已重新送出');}
+
+/* 重繪之後把未送達狀態補回卡片上 */
+(function(){
+  var base=renderFeed;
+  window.renderFeed=function(){
+    base();
+    if(isHost)return;
+    feed.forEach(function(p){if(p._undeliver)markPostFailed(p.id,p._undeliver);});};})();
+
+/* 學員被解除唯讀時，把之前擋掉的重送一次 */
+(function(){var base=applySelfPerms;
+  window.applySelfPerms=function(){
+    var was=myViewOnly;
+    base();
+    if(was&&!myViewOnly){
+      var n=0;feed.forEach(function(p){if(p.uid===myId&&p._undeliver){resendPost(p.id);n++;}});
+      if(n)toast('老師已開放貼文，正在重送 '+n+' 則');}};})();
 </script>
 </body>
 </html>
