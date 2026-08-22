@@ -1219,6 +1219,9 @@ body.theme-dark .rail-conn .rc{background:rgba(255,255,255,.05);border-color:rgb
 body.theme-dark .rail-conn .rc b{color:#efece6;}
 body.theme-dark .rail-conn .rc.ok b{color:#7ede9c;}
 body.theme-dark .rail-conn .rc.relay b{color:#e8a184;}
+/* ===== v9.8 移植：畫布區域禁選取 ===== */
+.draw-area,.draw-area *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;}
+.draw-area input,.draw-area textarea,.draw-area [contenteditable="true"]{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default;}
 </style>
 </head>
 <body>
@@ -11259,7 +11262,7 @@ function ocrEngineHint(){
    否則 User 回報問題時附的版本號就對不上實際跑的那份。
    規則：修缺陷進位數（2.1.0→2.1.1），新功能進次版號（2.1→2.2）。
    ========================================================= */
-var APP_VER='2.2';
+var APP_VER='2.3';
 var APP_BUILD='2026-08-22';
 /* _block 是 IIFE 內的區域函式，兩版都取不到，改看建置時就固定的標題。
    這段在進教室之前執行，標題還沒被教室名稱賓換。 */
@@ -11526,6 +11529,136 @@ function refreshConnKind(){
     setTimeout(refreshConnKind,4000);}
   var be=enterRoom;
   window.enterRoom=function(){var r=be.apply(this,arguments);try{start();}catch(e){}return r;};
+})();
+</script>
+<script>
+/* =========================================================
+   v9.7 第 3 項移植（改寫）＋ 分塊傳輸節流
+
+   上游的做法是在 tSend 前面加一道「超過 9,000,000 字就拒送」。
+   我們不能照抄那個門檻——我們允許 20MB 的錄影貼文，轉成 dataURL 約 27M 字，
+   照那個門檻會把合法內容擋掉。
+
+   而且真正壓垮學員端的不是訊息大小，是**送法**：
+   原本的 tSend 對大訊息做 `for(i=0;i<n;i++)conn.send(...)`，
+   一則 20MB 貼文就是約 470 塊**同步塞完、零節流**，
+   DataChannel 的送出緩衝瞬間爆掉，收送兩端都可能斷。
+
+   所以這裡做三件事：
+   1. 硬上限只當防呆（擋掉明顯異常的 payload），訂在合法上限之上
+   2. 依 bufferedAmount 節流分塊，緩衝滿了就等它排掉再繼續
+   3. 補上 _asm 的逾時清理——原本傳到一半中斷的組裝暫存永遠不會被回收
+
+   tRecv 是用 parts[i] 依索引組裝的，所以非同步送出不影響正確性。
+   ========================================================= */
+var MAXMSG=92000000;          /* 約 92M 字 ≈ 65MB 二進位，比最大合法附件（60MB）留有餘裕 */
+var BUF_HIGH=1200000;         /* 送出緩衝超過約 1.2MB 就暫停 */
+var BUF_LOW=300000;           /* 排到 300KB 以下再繼續 */
+var ASM_TTL=120000;           /* 組裝暫存保留 2 分鐘 */
+
+function _dcOf(conn){
+  try{return conn&&(conn.dataChannel||(conn._dc)||null);}catch(e){return null;}}
+function _buffered(conn){
+  var dc=_dcOf(conn);
+  return (dc&&typeof dc.bufferedAmount==='number')?dc.bufferedAmount:0;}
+
+function tSend(conn,obj){
+  if(!conn||!conn.open)return;
+  var str;
+  try{str=JSON.stringify(obj);}catch(e){return;}
+
+  /* 防呆：正常路徑上游已有各自的大小檢查，這裡只擋異常 */
+  if(str.length>MAXMSG){
+    /* 不用 Math.round：小於 0.5MB 時會顯示「約 0 MB」 */
+    var _mb=str.length/1048576;
+    try{toast('內容過大（約 '+(_mb>=1?_mb.toFixed(1)+' MB':Math.round(str.length/1024)+' KB')+'），已略過傳送以免對方斷線');}catch(e){}
+    return;}
+
+  if(str.length<=CHUNK){conn.send(JSON.stringify({k:'m',d:str}));return;}
+
+  var mid=uid(), n=Math.ceil(str.length/CHUNK), i=0;
+  (function pump(){
+    if(!conn||!conn.open)return;                       /* 中途斷線就停 */
+    while(i<n){
+      if(_buffered(conn)>BUF_HIGH){                    /* 緩衝滿了，等排掉 */
+        var wait=setInterval(function(){
+          if(!conn||!conn.open){clearInterval(wait);return;}
+          if(_buffered(conn)<=BUF_LOW){clearInterval(wait);pump();}},60);
+        return;}
+      try{conn.send(JSON.stringify({k:'c',id:mid,i:i,n:n,d:str.slice(i*CHUNK,(i+1)*CHUNK)}));}
+      catch(e){return;}
+      i++;
+      if(i%12===0){setTimeout(pump,0);return;}         /* 每 12 塊讓出主執行緒，避免卡住畫面 */
+    }
+  })();}
+
+/* 傳到一半中斷的組裝暫存原本永遠不會被回收 */
+(function(){
+  var base=tRecv;
+  window.tRecv=function(raw,cb){
+    var r=base(raw,cb);
+    try{
+      var now=Date.now();
+      for(var k in _asm){
+        var a=_asm[k];
+        if(!a._t)a._t=now;
+        else if(now-a._t>ASM_TTL)delete _asm[k];}
+    }catch(e){}
+    return r;};})();
+</script>
+
+<script>
+/* =========================================================
+   v9.8 移植 — 手寫時不再跳出 iOS／Android 的文字選取選單
+
+   平板上用手指或觸控筆在畫布拖曳，會被系統判定為「選取文字」而
+   彈出「拷貝／搜尋／解釋」的快捷選單，蓋住工具列也打斷書寫。
+
+   我們原本只有 #board 的 touch-action:none，那擋的是捲動與縮放手勢，
+   擋不掉選取選單——那是 selectstart／contextmenu 這條路。
+
+   所有攔截都先用 isEditableTarget() 排除輸入框，不影響在便利貼上打字。
+   ========================================================= */
+function isEditableTarget(t){
+  if(!t||!t.closest)return false;
+  if(t.matches&&t.matches('input,textarea,select'))return true;
+  return !!t.closest('input,textarea,select,[contenteditable="true"]');}
+
+function _inCanvas(t){
+  var a=$('drawArea');
+  return !!(a&&t&&a.contains&&a.contains(t));}
+
+(function(){
+  /* 1) 畫布開啟時禁止選取與長按／右鍵選單 */
+  ['selectstart','contextmenu'].forEach(function(ev){
+    document.addEventListener(ev,function(e){
+      var d=$('drawModal');
+      if(!d||!d.classList.contains('show'))return;
+      if(isEditableTarget(e.target))return;
+      e.preventDefault();},true);});
+
+  /* 2) 擋 iOS 的雙指縮放與雙擊放大（只在畫布區域內） */
+  ['gesturestart','gesturechange','gestureend'].forEach(function(ev){
+    document.addEventListener(ev,function(e){
+      if(_inCanvas(e.target))e.preventDefault();},{passive:false});});
+
+  /* 3) 觸控在畫布上時清掉已產生的選取，避免選單殘留 */
+  function clearSel(){
+    try{
+      if(isEditableTarget(document.activeElement))return;
+      var s=window.getSelection&&window.getSelection();
+      if(s&&s.rangeCount)s.removeAllRanges();
+    }catch(e){}}
+  document.addEventListener('pointerdown',function(e){
+    if(_inCanvas(e.target)&&!isEditableTarget(e.target))clearSel();},true);
+  document.addEventListener('touchend',function(e){
+    if(_inCanvas(e.target)&&!isEditableTarget(e.target))setTimeout(clearSel,10);},{passive:true});
+
+  /* 4) 觸控筆／手指在畫布上滑動時，阻止頁面捲動與橡皮筋效果。
+        touch-action:none 只作用在 #board，畫布區域的其他部分仍會彈。 */
+  document.addEventListener('touchmove',function(e){
+    if(_inCanvas(e.target)&&!isEditableTarget(e.target)&&e.cancelable)e.preventDefault();},
+    {passive:false});
 })();
 </script>
 </body>
