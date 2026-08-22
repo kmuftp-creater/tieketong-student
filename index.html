@@ -1206,6 +1206,19 @@ body.theme-dark .scr-diag{color:#efece6;background:rgba(255,255,255,.06);}
 .card.undeliver{outline:2px solid rgba(197,80,58,.4);outline-offset:-2px;}
 body.theme-dark .send-st.ok{color:#8fd08c;}
 body.theme-dark .send-st.bad{color:#ff9c86;}
+/* ===== 連線型態顯示 ===== */
+.conn-pill.relay{color:#8f4429;background:rgba(183,91,56,.14);border-color:rgba(183,91,56,.45);}
+.rail-conn{display:flex;gap:6px;flex-wrap:wrap;}
+.rail-conn .rc{flex:1 1 0;min-width:70px;text-align:center;background:rgba(35,35,35,.05);border:1px solid var(--line);border-radius:9px;padding:6px 8px;font-size:11.5px;font-weight:700;color:var(--mut);}
+.rail-conn .rc b{display:block;font-size:16px;font-weight:800;color:var(--tx);font-variant-numeric:tabular-nums;line-height:1.25;}
+.rail-conn .rc.ok b{color:#2f7f3a;}
+.rail-conn .rc.relay{background:rgba(183,91,56,.12);border-color:rgba(183,91,56,.4);}
+.rail-conn .rc.relay b{color:#8f4429;}
+body.theme-dark .conn-pill.relay{color:#e8a184;background:rgba(183,91,56,.2);border-color:rgba(232,161,132,.45);}
+body.theme-dark .rail-conn .rc{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14);}
+body.theme-dark .rail-conn .rc b{color:#efece6;}
+body.theme-dark .rail-conn .rc.ok b{color:#7ede9c;}
+body.theme-dark .rail-conn .rc.relay b{color:#e8a184;}
 </style>
 </head>
 <body>
@@ -11246,7 +11259,7 @@ function ocrEngineHint(){
    否則 User 回報問題時附的版本號就對不上實際跑的那份。
    規則：修缺陷進位數（2.1.0→2.1.1），新功能進次版號（2.1→2.2）。
    ========================================================= */
-var APP_VER='2.1.2';
+var APP_VER='2.2';
 var APP_BUILD='2026-08-22';
 /* _block 是 IIFE 內的區域函式，兩版都取不到，改看建置時就固定的標題。
    這段在進教室之前執行，標題還沒被教室名稱賓換。 */
@@ -11385,6 +11398,135 @@ function resendPost(id){
     if(was&&!myViewOnly){
       var n=0;feed.forEach(function(p){if(p.uid===myId&&p._undeliver){resendPost(p.id);n++;}});
       if(n)toast('老師已開放貼文，正在重送 '+n+' 則');}};})();
+</script>
+<script>
+/* =========================================================
+   連線型態顯示（直連／中繼）
+
+   起因：中繼功能一直都在（自架 turns:turn.huobest.com:5349，
+   連不上時 escalateRelay() 會自動改走中繼），但**沒有任何地方顯示
+   實際跑的是哪一條**。所以「連得上」不等於「TURN 驗過了」——
+   同一個 Wi-Fi 或 NAT 寬鬆時根本不會用到中繼。
+   下次有人連不上，這個資訊決定了要查 TURN 還是查別的地方。
+
+   資料來源是 RTCPeerConnection.getStats() 裡被提名且成功的
+   candidate-pair，再回頭查它兩端 candidate 的 candidateType：
+     host   同網段直連
+     srflx  經 STUN 打洞成功的直連（prflx 同類）
+     relay  走 TURN 中繼
+   只要**任一端**是 relay，這條連線就是走中繼。
+   ========================================================= */
+var _connKind='', _connKindT=null;
+
+function connKindLabel(k){
+  return k==='relay' ? '中繼' : (k==='host' ? '直連' : (k ? '直連' : ''));}
+function connKindDetail(k){
+  if(k==='relay')return '走 TURN 中繼（turn.huobest.com）。速度略慢但最穩，通常是網路擋住了 P2P 直連。';
+  if(k==='host')return '同網段直連，沒有經過任何伺服器。';
+  if(k==='srflx'||k==='prflx')return '經 STUN 打洞後直連，媒體不經過中繼伺服器。';
+  return '尚未取得連線型態。';}
+
+/* 讀出這條 RTCPeerConnection 實際使用的路徑 */
+function probeConnKind(pc,cb){
+  if(!pc||typeof pc.getStats!=='function'){cb('');return;}
+  try{
+    pc.getStats().then(function(st){
+      var pair=null, cand={};
+      st.forEach(function(r){
+        if(r.type==='candidate-pair'&&r.state==='succeeded'&&(r.nominated||r.selected))pair=r;
+        if(r.type==='local-candidate'||r.type==='remote-candidate')cand[r.id]=r;});
+      if(!pair){cb('');return;}
+      var l=cand[pair.localCandidateId], m=cand[pair.remoteCandidateId];
+      var lt=(l&&l.candidateType)||'', rt=(m&&m.candidateType)||'';
+      /* 任一端走中繼，整條就是中繼 */
+      cb((lt==='relay'||rt==='relay')?'relay':(lt||rt||''));
+    }).catch(function(){cb('');});
+  }catch(e){cb('');}}
+
+/* 學員端：只有一條往房主的連線 */
+function refreshConnKindGuest(){
+  if(isHost)return;
+  var pc=hostConn&&hostConn.peerConnection;
+  if(!pc||!(hostConn&&hostConn.open)){_connKind='';return;}
+  probeConnKind(pc,function(k){
+    if(k===_connKind)return;
+    _connKind=k;
+    try{updateConnPill(hostConn&&hostConn.open?'on':'off');}catch(e){}});}
+
+/* 房主端：每位學員各一條，統計有幾條走中繼 */
+function connKindSummary(){
+  var out={total:0,relay:0,direct:0,unknown:0};
+  for(var p in conns){
+    var c=conns[p];
+    if(!c||!c.open)continue;
+    out.total++;
+    var k=c._connKind;
+    if(k==='relay')out.relay++;
+    else if(k)out.direct++;
+    else out.unknown++;}
+  return out;}
+function refreshConnKindHost(){
+  if(!isHost)return;
+  for(var p in conns){(function(c){
+    if(!c||!c.open||!c.peerConnection)return;
+    probeConnKind(c.peerConnection,function(k){c._connKind=k;});
+  })(conns[p]);}}
+
+function refreshConnKind(){
+  try{ if(isHost)refreshConnKindHost(); else refreshConnKindGuest(); }catch(e){}}
+
+/* 學員端的連線膠囊加上型態。原本只有「已連線／重連中／已斷線」。 */
+(function(){
+  var base=updateConnPill;
+  window.updateConnPill=function(st){
+    base(st);
+    var el=$('connPill');
+    if(!el||isHost||st!=='on')return;
+    var lab=connKindLabel(_connKind);
+    if(lab){
+      el.textContent='🟢 已連線・'+lab;
+      el.classList.toggle('relay',_connKind==='relay');
+      el.title='連線方式：'+lab+'\n'+connKindDetail(_connKind)+'\n（點一下可重新連線）';}
+    else el.title='連線正常（尚未取得連線型態）';};
+})();
+
+/* 房主端：放進左側欄的統計區 */
+(function(){
+  if(typeof renderRail!=='function')return;
+  var base=renderRail;
+  window.renderRail=function(){
+    base();
+    var b=$('railBody');
+    if(!b||!document.body.classList.contains('rail-on'))return;
+    var s=connKindSummary();
+    if(!s.total)return;
+    var sec=document.createElement('div');
+    sec.className='rail-sec';
+    sec.innerHTML='連線方式<span class="rail-n">'+s.total+' 條</span>';
+    var box=document.createElement('div');
+    box.className='rail-conn';
+    box.innerHTML=
+      '<span class="rc'+(s.direct?' ok':'')+'">直連 <b>'+s.direct+'</b></span>'+
+      '<span class="rc'+(s.relay?' relay':'')+'">中繼 <b>'+s.relay+'</b></span>'+
+      (s.unknown?('<span class="rc">量測中 <b>'+s.unknown+'</b></span>'):'');
+    box.title='中繼＝走 TURN（turn.huobest.com）。學員在學校或公司網路擋住 P2P 時會自動改走這條。';
+    /* 插在成員名單之前 */
+    var memSec=[].filter.call(b.querySelectorAll('.rail-sec'),function(e){
+      return /成員名單/.test(e.textContent);})[0];
+    if(memSec){b.insertBefore(sec,memSec);b.insertBefore(box,memSec);}
+    else{b.appendChild(sec);b.appendChild(box);}};
+})();
+
+/* 連線建立後量一次，之後每 12 秒複查（ICE 可能中途改走別條路） */
+(function(){
+  function start(){
+    clearInterval(_connKindT);
+    _connKindT=setInterval(refreshConnKind,12000);
+    setTimeout(refreshConnKind,1200);
+    setTimeout(refreshConnKind,4000);}
+  var be=enterRoom;
+  window.enterRoom=function(){var r=be.apply(this,arguments);try{start();}catch(e){}return r;};
+})();
 </script>
 </body>
 </html>
